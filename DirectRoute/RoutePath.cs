@@ -3,6 +3,17 @@ using System.Text;
 
 namespace DirectRoute;
 
+/// <summary>
+/// Represents a route path (often called a "template" in framework code) of the form "entities/{EntityId}/resource".
+/// These are the values you are familiar with in both Blazor and Web Api to define the routes for your pages and
+/// API endpoints.  This class is responsible for:
+///
+/// * Being able to parse those paths into segments (separated by the slash / character) where each segment is either
+///   a string literal or a variable substitution.  These are represented as an instance of RoutePart.
+/// * Being able to obtain the original template (by reconstructing it)
+/// * Formatting into a relative url incorporating both route value substitution and query string handling.
+/// * Matching an existing url and extracting the provided route values into a dictionary of key value pairs (the route dictionary).
+/// </summary>
 public class RoutePath
 {
     public IReadOnlyList<RoutePart> Parts => parts;
@@ -10,18 +21,37 @@ public class RoutePath
 
     private readonly List<RoutePart> parts = new();
 
-    public RoutePath(IEnumerable<RoutePart> parts)
+    private RoutePath(IEnumerable<RoutePart> parts)
     {
         this.parts = parts.ToList();
     }
 
+    /// <summary>
+    /// Reconstructs the original path that was sent to the parse method.
+    /// </summary>
     public string Value => string.Join('/', parts.Select(x => x));
 
+    /// <summary>
+    /// Primarily responsible for converting the provided routeValues array into a route dictionary with the keys
+    /// derived from the route parts representing variables.  Also returns an indication of whether this RoutePath
+    /// actually matches the provided path.
+    /// </summary>
+    /// <param name="path">The URL path you are matching against</param>
+    /// <param name="routeValues">The route values that should be substituted in to form the route dictionary</param>
+    /// <returns>A RouteMatch object indicating whether it's a successful match and the route dictionary</returns>
     public RouteMatch Match(string path, params object[] routeValues)
     {
         return Match(path.Split('/'), routeValues);
     }
 
+    /// <summary>
+    /// Primarily responsible for converting the provided routeValues array into a route dictionary with the keys
+    /// derived from the route parts representing variables.  Also returns an indication of whether this RoutePath
+    /// actually matches the provided pathSegments.
+    /// </summary>
+    /// <param name="pathSegments">The URL path you are matching against after being split across '/' into separate segments</param>
+    /// <param name="routeValues">The route values that should be substituted in to form the route dictionary</param>
+    /// <returns>A RouteMatch object indicating whether it's a successful match and the route dictionary</returns>
     public RouteMatch Match(string[] pathSegments, object[] routeValues)
     {
         if (pathSegments.Length != parts.Count)
@@ -50,6 +80,12 @@ public class RoutePath
         return new RouteMatch(new Dictionary<string, object>(routeArguments));
     }
 
+    /// <summary>
+    /// Parses the provided string into a RoutePath.  These strings should folow the convention of route templates
+    /// seen in Blazor and Web Api.
+    /// </summary>
+    /// <param name="s">The path to parse</param>
+    /// <returns>A new instance of RoutePath representing the provided path</returns>
     public static RoutePath Parse(string s)
     {
         var segments = s.Split('/', StringSplitOptions.RemoveEmptyEntries);
@@ -77,12 +113,23 @@ public class RoutePath
         return new RoutePath(parts);
     }
 
+    /// <summary>
+    /// Formats this RoutePath instance into a relative url incorporating the provided routeArguments and
+    /// queryString.  Note that these objects can either be an instance of Dictionary{string, object} or
+    /// else uses reflection to convert the properties in the object into a dictionary.
+    /// </summary>
     public string FormatUrl(object? routeArguments, object? queryString)
     {
         var url = FormatPath(routeArguments).Query(queryString);
         return url;
     }
 
+    /// <summary>
+    /// Formats this RoutePath instance into a relative url incorporating the provided routeArguments and
+    /// queryString.  Note that queryString can either be an instance of Dictionary{string, object} or
+    /// else uses reflection to convert the properties in the object into a dictionary.  Note: the number
+    /// of elements in routeArguments should match the number of variables in this path.
+    /// </summary>
     public string FormatUrl(object[] routeArguments, object? queryString)
     {
         var url = FormatPath(routeArguments).Query(queryString);
