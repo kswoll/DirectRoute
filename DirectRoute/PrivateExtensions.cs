@@ -82,4 +82,27 @@ internal static class PrivateExtensions
         }
         return result;
     }
+
+    public static string GetFullFriendlyName(this Type type)
+    {
+        return $"{type.Namespace}.{type.GetFriendlyName()}";
+    }
+
+    public static string GetFriendlyName(this Type type)
+    {
+        if (type.IsGenericType)
+            return $"{type.Name.Split('`')[0]}<{string.Join(", ", type.GetGenericArguments().Select(x => x.GetFriendlyName()))}>";
+        else
+            return type.Name;
+    }
+
+    public static string Capitalize(this string s)
+    {
+        return string.Concat(s[0].ToString().ToUpper(), s[1..]);
+    }
+
+    public static string Decapitalize(this string s)
+    {
+        return string.Concat(s[0].ToString().ToLower(), s[1..]);
+    }
 }

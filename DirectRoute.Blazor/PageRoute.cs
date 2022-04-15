@@ -1,6 +1,4 @@
-﻿using Microsoft.AspNetCore.Components;
-
-namespace DirectRoute.Blazor;
+﻿namespace DirectRoute.Blazor;
 
 public class PageRoute
 {
