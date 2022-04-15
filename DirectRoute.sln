@@ -3,15 +3,19 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.1.32319.34
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DirectRoute", "DirectRoute\DirectRoute.csproj", "{F9882394-70B2-48D6-9AC3-3C64D56192C5}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DirectRoute", "DirectRoute\DirectRoute.csproj", "{F9882394-70B2-48D6-9AC3-3C64D56192C5}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DirectRoute.Blazor", "DirectRoute.Blazor\DirectRoute.Blazor.csproj", "{BB55C510-0839-45CD-B1DC-DF2370570227}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DirectRoute.Blazor", "DirectRoute.Blazor\DirectRoute.Blazor.csproj", "{BB55C510-0839-45CD-B1DC-DF2370570227}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DirectRoute.Endpoints", "DirectRoute.Endpoints\DirectRoute.Endpoints.csproj", "{771F3D5C-3688-4EF0-BF12-DAC77286681C}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DirectRoute.Endpoints", "DirectRoute.Endpoints\DirectRoute.Endpoints.csproj", "{771F3D5C-3688-4EF0-BF12-DAC77286681C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DirectRoute.Endpoints.Server", "DirectRoute.Endpoints.Server\DirectRoute.Endpoints.Server.csproj", "{803D5225-4F80-4BE6-9855-D9F7145F3815}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DirectRoute.Endpoints.Server", "DirectRoute.Endpoints.Server\DirectRoute.Endpoints.Server.csproj", "{803D5225-4F80-4BE6-9855-D9F7145F3815}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DirectRoute.Tests", "DirectRoute.Tests\DirectRoute.Tests.csproj", "{2FD54545-9F3D-4E10-B476-EF81C0CF5B9D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DirectRoute.Tests", "DirectRoute.Tests\DirectRoute.Tests.csproj", "{2FD54545-9F3D-4E10-B476-EF81C0CF5B9D}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DirectRoute.Analyzers", "DirectRoute.Analyzers\DirectRoute.Analyzers.csproj", "{00E48C5A-B191-434B-9A8A-A72986EF1C5C}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DirectRoute.Endpoints.Server.Tests", "DirectRoute.Endpoints.Server.Tests\DirectRoute.Endpoints.Server.Tests.csproj", "{BCEE6F12-B565-4174-BC12-B766F178953E}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -39,6 +43,14 @@ Global
 		{2FD54545-9F3D-4E10-B476-EF81C0CF5B9D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{2FD54545-9F3D-4E10-B476-EF81C0CF5B9D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{2FD54545-9F3D-4E10-B476-EF81C0CF5B9D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{00E48C5A-B191-434B-9A8A-A72986EF1C5C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{00E48C5A-B191-434B-9A8A-A72986EF1C5C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{00E48C5A-B191-434B-9A8A-A72986EF1C5C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{00E48C5A-B191-434B-9A8A-A72986EF1C5C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BCEE6F12-B565-4174-BC12-B766F178953E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BCEE6F12-B565-4174-BC12-B766F178953E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BCEE6F12-B565-4174-BC12-B766F178953E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BCEE6F12-B565-4174-BC12-B766F178953E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

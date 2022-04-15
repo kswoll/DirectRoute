@@ -1,5 +1,11 @@
 ﻿namespace DirectRoute.Endpoints.Server;
 
+/// <summary>
+/// Provides an extension point to customize the behavior of endpoints outside of the endpoint's
+/// implementation.  For example, HttpMiddleware provides all the functionality neccessary to
+/// translate the input and output of an endpoint from the HTTP request and response
+/// respectively.
+/// </summary>
 public interface IApiEndpointMiddleware
 {
     Task InitializeAsync(ApiEndpoint endpoint);

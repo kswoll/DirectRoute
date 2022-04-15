@@ -1,6 +1,6 @@
 ﻿namespace DirectRoute.Blazor;
 
-public abstract class PageRoutes
+public abstract class PageRoutesBase
 {
     public IReadOnlyList<PageRoute> Routes => routes;
 

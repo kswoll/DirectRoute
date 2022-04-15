@@ -17,7 +17,7 @@ public class PageRouteRouter : IComponent, IHandleAfterRender, IDisposable
     private INavigationInterception NavigationInterception { get; set; } = default!;
 
     [Inject]
-    private PageRoutes PageRoutes { get; set; } = default!;
+    private PageRoutesBase PageRoutes { get; set; } = default!;
 
     [Parameter]
     public RenderFragment? NotFound { get; set; }
@@ -26,7 +26,7 @@ public class PageRouteRouter : IComponent, IHandleAfterRender, IDisposable
     public RenderFragment<RouteData>? Found { get; set; }
 
     [Parameter]
-    public IReadOnlyList<Assembly>? ReferenceAssemblies { get; set; }
+    public Assembly[]? ReferenceAssemblies { get; set; }
 
     public void Attach(RenderHandle renderHandle)
     {

@@ -1,5 +1,10 @@
 ﻿namespace DirectRoute.Endpoints.Server;
 
+/// <summary>
+/// Convenience implementation of IApiEndpointMiddleware that implements that interface
+/// and exposes the methods as virtual methods that can be overridden and also provides
+/// both async and non async versions for you to override.
+/// </summary>
 public class ApiEndpointMiddleware : IApiEndpointMiddleware
 {
     protected virtual void Initialize(ApiEndpoint endpoint)
