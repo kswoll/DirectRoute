@@ -66,18 +66,9 @@ internal class PageRouteTree
         {
             if (part.Type == RoutePartType.Variable)
             {
-                if (part.Constraint != null)
-                {
-                    if (!wildcards.TryGetValue(part.Constraint, out var wildcard))
-                        wildcards[part.Constraint] = wildcard = new Node();
-                    return wildcard;
-                }
-                else
-                {
-                    if (!wildcards.TryGetValue(RouteConstraint.None, out var wildcard))
-                        wildcards[RouteConstraint.None] = wildcard = new Node();
-                    return wildcard;
-                }
+                if (!wildcards.TryGetValue(part.Constraint, out var wildcard))
+                    wildcards[part.Constraint] = wildcard = new Node();
+                return wildcard;
             }
             else
             {

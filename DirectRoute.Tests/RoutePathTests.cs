@@ -43,12 +43,13 @@ public class RoutePathTests
     [Test]
     public void ParseOnlyVariableWithLiteral()
     {
-        var routePath = RoutePath.Parse("{id:int}");
+        var routePath = RoutePath.Parse("{id=5}");
         routePath.Parts.Count.ShouldBe(1);
         routePath.Parts[0].Type.ShouldBe(RoutePartType.Variable);
         routePath.Parts[0].Text.ShouldBeNull();
         routePath.Parts[0].Variable.ShouldBe("id");
-        routePath.Parts[0].Constraint!.Value.ShouldBe("int");
+        routePath.Parts[0].Constraint!.ConstraintType.ShouldBe(RouteConstraintType.Literal);
+        routePath.Parts[0].Constraint!.Value.ShouldBe("5");
     }
 
     [Test]
@@ -104,6 +105,17 @@ public class RoutePathTests
     public void MatchCastsToType()
     {
         var routePath = RoutePath.Parse("leagues/{Id:int}/schedule");
+        var match = routePath.Match("leagues/5/schedule", 5);
+        match.IsMatch.ShouldBeTrue();
+
+        var id = match.RouteArguments["Id"];
+        (id is int).ShouldBeTrue();
+    }
+
+    [Test]
+    public void MatchLiteral()
+    {
+        var routePath = RoutePath.Parse("leagues/{Id=5}/schedule");
         var match = routePath.Match("leagues/5/schedule", 5);
         match.IsMatch.ShouldBeTrue();
 

@@ -5,7 +5,7 @@ public class RoutePart
     public RoutePartType Type { get; set; }
     public string? Text { get; set; }
     public string? Variable { get; set; }
-    public RouteConstraint? Constraint { get; set; }
+    public RouteConstraint Constraint { get; set; }
 
     public RoutePart(RoutePartType type, string value, RouteConstraint? constraint = null)
     {
@@ -13,11 +13,12 @@ public class RoutePart
         if (type == RoutePartType.Text)
         {
             Text = value;
+            Constraint = RouteConstraint.None;
         }
         else
         {
             Variable = value;
-            Constraint = constraint;
+            Constraint = constraint ?? RouteConstraint.None;
         }
     }
 
@@ -26,7 +27,7 @@ public class RoutePart
         return Type switch
         {
             RoutePartType.Text => Text!,
-            _ => $"{{{(Constraint == null ? Variable : $"{Variable}{Constraint.Operator}{Constraint.Value}")}}}",
+            _ => $"{{{$"{Variable}{Constraint.Operator}{Constraint.Value}"}}}",
         };
     }
 

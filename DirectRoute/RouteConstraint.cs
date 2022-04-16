@@ -23,6 +23,16 @@ public class RouteConstraint
     public static RouteConstraint Long { get; } = Type("long", x => long.TryParse(x, NumberStyles.Integer, CultureInfo.InvariantCulture, out var result) ? result : null);
 
     public string? Value { get; }
+    public RouteConstraintType ConstraintType => constraintType;
+
+    /// <summary>
+    /// Returns true if a value should be provided to this route part when formatting a url.
+    /// </summary>
+    public bool IsPathValueRequired => constraintType switch
+    {
+        RouteConstraintType.Type or RouteConstraintType.None => true,
+        _ => false
+    };
 
     public string Operator => constraintType switch
     {

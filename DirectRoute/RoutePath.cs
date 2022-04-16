@@ -156,8 +156,8 @@ public class RoutePath
     {
         if (routeArguments is null)
             throw new ArgumentNullException(nameof(routeArguments));
-        if (routeArguments.Length != Variables.Count())
-            throw new ArgumentException($"{nameof(routeArguments)} must contain the same number of elements as this path supports");
+        if (routeArguments.Length != Variables.Where(x => x.Constraint.IsPathValueRequired).Count())
+            throw new ArgumentException($"{nameof(routeArguments)} must contain the same number of elements as this path supports ({Value}), found only variables for {string.Join(", ", Variables.Select(x => x.Variable))}");
 
         var result = new StringBuilder();
         var routeArgumentQueue = new Queue<object>(routeArguments);
@@ -169,7 +169,12 @@ public class RoutePath
             }
             else
             {
-                var value = routeArgumentQueue.Dequeue();
+                object? value;
+                if (part.Constraint.IsPathValueRequired)
+                    value = routeArgumentQueue.Dequeue();
+                else
+                    value = part.Constraint.Value;
+
                 result.Append(Convert.ChangeType(value, typeof(string)));
             }
 
@@ -192,10 +197,19 @@ public class RoutePath
             else
             {
                 var variableParts = part.Variable!.Split(':');
-                if (routeDictionary == null || !routeDictionary.TryGetValue(variableParts[0], out var value))
+                object? value;
+                if (part.Constraint.IsPathValueRequired)
                 {
-                    throw new Exception($"Cannot format {Value}.  Provided {nameof(routeArguments)} missing value for {part.Variable}");
+                    if (routeDictionary == null || !routeDictionary.TryGetValue(variableParts[0], out value))
+                    {
+                        throw new Exception($"Cannot format {Value}.  Provided {nameof(routeArguments)} missing value for {part.Variable}");
+                    }
                 }
+                else
+                {
+                    value = part.Constraint.Value;
+                }
+
                 result.Append(value?.ToString());
             }
 
