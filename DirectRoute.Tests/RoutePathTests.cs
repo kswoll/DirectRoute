@@ -37,7 +37,18 @@ public class RoutePathTests
         routePath.Parts[0].Type.ShouldBe(RoutePartType.Variable);
         routePath.Parts[0].Text.ShouldBeNull();
         routePath.Parts[0].Variable.ShouldBe("id");
-        routePath.Parts[0].Constraint!.Type.ShouldBe("int");
+        routePath.Parts[0].Constraint!.Value.ShouldBe("int");
+    }
+
+    [Test]
+    public void ParseOnlyVariableWithLiteral()
+    {
+        var routePath = RoutePath.Parse("{id:int}");
+        routePath.Parts.Count.ShouldBe(1);
+        routePath.Parts[0].Type.ShouldBe(RoutePartType.Variable);
+        routePath.Parts[0].Text.ShouldBeNull();
+        routePath.Parts[0].Variable.ShouldBe("id");
+        routePath.Parts[0].Constraint!.Value.ShouldBe("int");
     }
 
     [Test]

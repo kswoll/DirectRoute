@@ -12,32 +12,62 @@ public class RouteConstraint
     /// </summary>
     private static readonly Dictionary<string, RouteConstraint> constraintsByType = new();
 
-    public static RouteConstraint None { get; } = new RouteConstraint(null, x => x);
-    public static RouteConstraint Integer { get; } = new RouteConstraint("int", x => int.TryParse(x, NumberStyles.Integer, CultureInfo.InvariantCulture, out var result) ? result : 0);
-    public static RouteConstraint Boolean { get; } = new RouteConstraint("bool", x => bool.TryParse(x, out var result) ? result : 0);
-    public static RouteConstraint DateTime { get; } = new RouteConstraint("datetime", x => System.DateTime.TryParse(x, CultureInfo.InvariantCulture, DateTimeStyles.None, out var result) ? result : 0);
-    public static RouteConstraint Decimal { get; } = new RouteConstraint("decimal", x => decimal.TryParse(x, NumberStyles.Number, CultureInfo.InvariantCulture, out var result) ? result : 0);
-    public static RouteConstraint Double { get; } = new RouteConstraint("double", x => double.TryParse(x, NumberStyles.Number, CultureInfo.InvariantCulture, out var result) ? result : 0);
-    public static RouteConstraint Float { get; } = new RouteConstraint("float", x => float.TryParse(x, NumberStyles.Number, CultureInfo.InvariantCulture, out var result) ? result : 0);
-    public static RouteConstraint Guid { get; } = new RouteConstraint("guid", x => System.Guid.TryParse(x, out var result) ? result : 0);
-    public static RouteConstraint Long { get; } = new RouteConstraint("long", x => long.TryParse(x, NumberStyles.Integer, CultureInfo.InvariantCulture, out var result) ? result : 0);
+    public static RouteConstraint None { get; } = new RouteConstraint("", x => x, RouteConstraintType.None);
+    public static RouteConstraint Integer { get; } = Type("int", x => int.TryParse(x, NumberStyles.Integer, CultureInfo.InvariantCulture, out var result) ? result : null);
+    public static RouteConstraint Boolean { get; } = Type("bool", x => bool.TryParse(x, out var result) ? result : null);
+    public static RouteConstraint DateTime { get; } = Type("datetime", x => System.DateTime.TryParse(x, CultureInfo.InvariantCulture, DateTimeStyles.None, out var result) ? result : null);
+    public static RouteConstraint Decimal { get; } = Type("decimal", x => decimal.TryParse(x, NumberStyles.Number, CultureInfo.InvariantCulture, out var result) ? result : null);
+    public static RouteConstraint Double { get; } = Type("double", x => double.TryParse(x, NumberStyles.Number, CultureInfo.InvariantCulture, out var result) ? result : null);
+    public static RouteConstraint Float { get; } = Type("float", x => float.TryParse(x, NumberStyles.Number, CultureInfo.InvariantCulture, out var result) ? result : null);
+    public static RouteConstraint Guid { get; } = Type("guid", x => System.Guid.TryParse(x, out var result) ? result : null);
+    public static RouteConstraint Long { get; } = Type("long", x => long.TryParse(x, NumberStyles.Integer, CultureInfo.InvariantCulture, out var result) ? result : null);
 
-    public string? Type { get; }
+    public string? Value { get; }
 
-    private readonly Func<string, object> converter;
-
-    public RouteConstraint(string? type, Func<string, object> converter)
+    public string Operator => constraintType switch
     {
-        Type = type;
-        this.converter = converter;
+        RouteConstraintType.Type => ":",
+        RouteConstraintType.Literal => ":",
+        _ => ""
+    };
 
-        if (Type != null)
-            constraintsByType[Type] = this;
+    private readonly Func<string, object?> converter;
+    private readonly RouteConstraintType constraintType;
+
+    public static RouteConstraint Type(string type, Func<string, object?> converter)
+    {
+        var constraint = new RouteConstraint(type, converter, RouteConstraintType.Type);
+        constraintsByType[type] = constraint;
+        return constraint;
+    }
+
+    public static RouteConstraint Literal(string value)
+    {
+        return new RouteConstraint(value, x => x == value ? value : null, RouteConstraintType.Literal);
+    }
+
+    private RouteConstraint(string? value, Func<string, object?> converter, RouteConstraintType constraintType)
+    {
+        Value = value;
+        this.converter = converter;
+        this.constraintType = constraintType;
     }
 
     public static RouteConstraint Get(string type) => constraintsByType[type];
 
-    public object Convert(string value)
+    public override string ToString()
+    {
+        var @operator = constraintType switch
+        {
+            RouteConstraintType.Type => ":",
+            RouteConstraintType.Literal => "=",
+            _ => ""
+        };
+
+        return $"{@operator}{Value}";
+    }
+
+    public object? Convert(string value)
     {
         return converter(value);
     }

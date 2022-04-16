@@ -1,10 +1,19 @@
 ﻿using System.Text;
 using System.Text.Encodings.Web;
+using System.Text.RegularExpressions;
 
 namespace DirectRoute;
 
 internal static class PrivateExtensions
 {
+    public static string[] SplitAndIncludeDelimiters(this string s, char[] separators)
+    {
+        var regexSeparators = string.Concat(separators.Select(x => $"\\{x}"));
+        var pattern = $"([{regexSeparators}])";
+        var results = Regex.Split(s, pattern).ToArray();
+        return results;
+    }
+
     public static IEnumerable<(int, T)> Enumerate<T>(this IEnumerable<T> source, int start = 0)
     {
         int i = start;

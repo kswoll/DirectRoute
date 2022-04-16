@@ -97,9 +97,25 @@ public class RoutePath
             if (segment.StartsWith("{") && segment.EndsWith("}"))
             {
                 var variable = segment[1..^1];
-                var variableParts = variable.Split(':');
-                var variableType = variableParts.ElementAtOrDefault(1);
-                var constraint = variableType == null ? null : RouteConstraint.Get(variableType);
+                var variableParts = variable.SplitAndIncludeDelimiters(new[] { ':', '=' });
+                var constraintTypeString = variableParts.ElementAtOrDefault(1);
+                var constraintType = constraintTypeString switch
+                {
+                    "=" => RouteConstraintType.Literal,
+                    ":" => RouteConstraintType.Type,
+                    _ => RouteConstraintType.None
+                };
+                var variableType = variableParts.ElementAtOrDefault(2);
+                if (constraintType != RouteConstraintType.None && variableType == null)
+                    throw new InvalidOperationException($"Invalid syntax for route constraint.  Missing right hand side of '{constraintTypeString}' in route '{s}'");
+
+                var constraint = constraintType switch
+                {
+                    RouteConstraintType.Type => RouteConstraint.Get(variableType!),
+                    RouteConstraintType.Literal => RouteConstraint.Literal(variableType!),
+                    _ => null
+                };
+
                 var variablePart = new RoutePart(RoutePartType.Variable, variableParts[0], constraint);
                 parts.Add(variablePart);
             }

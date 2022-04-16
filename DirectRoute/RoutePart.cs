@@ -26,11 +26,11 @@ public class RoutePart
         return Type switch
         {
             RoutePartType.Text => Text!,
-            _ => $"{{{(Constraint == null ? Variable : $"{Variable}:{Constraint.Type}")}}}",
+            _ => $"{{{(Constraint == null ? Variable : $"{Variable}{Constraint.Operator}{Constraint.Value}")}}}",
         };
     }
 
-    public object Convert(string value)
+    public object? Convert(string value)
     {
         if (Constraint != null)
             return Constraint.Convert(value);

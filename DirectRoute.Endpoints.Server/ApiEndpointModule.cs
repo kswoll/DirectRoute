@@ -15,28 +15,28 @@ public class ApiEndpointModule
     public IEndpointConventionBuilder MapGet<T>(string pattern = "")
         where T : ApiEndpoint
     {
-        var result = Endpoints.MapGet(ConstructPattern(pattern), new ModuleEndpointRequestHandler<T>(this).HandleRequest);
+        var result = Endpoints.MapGet(ConstructPattern(pattern), new ModuleEndpointRequestHandler<T>(this).HandleRequest());
         return result;
     }
 
     public IEndpointConventionBuilder MapPost<T>(string pattern = "")
         where T : ApiEndpoint
     {
-        var result = Endpoints.MapPost(ConstructPattern(pattern), new ModuleEndpointRequestHandler<T>(this).HandleRequest);
+        var result = Endpoints.MapPost(ConstructPattern(pattern), new ModuleEndpointRequestHandler<T>(this).HandleRequest());
         return result;
     }
 
     public IEndpointConventionBuilder MapDelete<T>(string pattern = "")
         where T : ApiEndpoint
     {
-        var result = Endpoints.MapDelete(ConstructPattern(pattern), new ModuleEndpointRequestHandler<T>(this).HandleRequest);
+        var result = Endpoints.MapDelete(ConstructPattern(pattern), new ModuleEndpointRequestHandler<T>(this).HandleRequest());
         return result;
     }
 
     public IEndpointConventionBuilder MapPut<T>(string pattern = "")
         where T : ApiEndpoint
     {
-        var result = Endpoints.MapPut(ConstructPattern(pattern), new ModuleEndpointRequestHandler<T>(this).HandleRequest);
+        var result = Endpoints.MapPut(ConstructPattern(pattern), new ModuleEndpointRequestHandler<T>(this).HandleRequest());
         return result;
     }
 

@@ -17,7 +17,7 @@ public class RouteConstraintTests
     {
         var constraint = RouteConstraint.Get("int");
         var expected = 42;
-        var result = (int)constraint.Convert(expected.ToString(CultureInfo.InvariantCulture));
+        var result = (int)constraint.Convert(expected.ToString(CultureInfo.InvariantCulture))!;
         result.ShouldBe(expected);
     }
 
@@ -26,7 +26,7 @@ public class RouteConstraintTests
     {
         var constraint = RouteConstraint.Get("long");
         var expected = 42L;
-        var result = (long)constraint.Convert(expected.ToString(CultureInfo.InvariantCulture));
+        var result = (long)constraint.Convert(expected.ToString(CultureInfo.InvariantCulture))!;
         result.ShouldBe(expected);
     }
 
@@ -35,7 +35,7 @@ public class RouteConstraintTests
     {
         var constraint = RouteConstraint.Get("float");
         var expected = 1.23F;
-        var result = (float)constraint.Convert(expected.ToString(CultureInfo.InvariantCulture));
+        var result = (float)constraint.Convert(expected.ToString(CultureInfo.InvariantCulture))!;
         result.ShouldBe(expected);
     }
 
@@ -44,7 +44,7 @@ public class RouteConstraintTests
     {
         var constraint = RouteConstraint.Get("double");
         var expected = 1.23D;
-        var result = (double)constraint.Convert(expected.ToString(CultureInfo.InvariantCulture));
+        var result = (double)constraint.Convert(expected.ToString(CultureInfo.InvariantCulture))!;
         result.ShouldBe(expected);
     }
 
@@ -53,7 +53,7 @@ public class RouteConstraintTests
     {
         var constraint = RouteConstraint.Get("decimal");
         var expected = 1.23M;
-        var result = (decimal)constraint.Convert(expected.ToString(CultureInfo.InvariantCulture));
+        var result = (decimal)constraint.Convert(expected.ToString(CultureInfo.InvariantCulture))!;
         result.ShouldBe(expected);
     }
 
@@ -62,7 +62,7 @@ public class RouteConstraintTests
     {
         var constraint = RouteConstraint.Get("bool");
         var expected = true;
-        var result = (bool)constraint.Convert(expected.ToString(CultureInfo.InvariantCulture));
+        var result = (bool)constraint.Convert(expected.ToString(CultureInfo.InvariantCulture))!;
         result.ShouldBe(expected);
     }
 
@@ -71,7 +71,7 @@ public class RouteConstraintTests
     {
         var constraint = RouteConstraint.Get("datetime");
         var expected = new DateTime(2022, 1, 2);
-        var result = (DateTime)constraint.Convert(expected.ToString("yyyy-M-d", CultureInfo.InvariantCulture));
+        var result = (DateTime)constraint.Convert(expected.ToString("yyyy-M-d", CultureInfo.InvariantCulture))!;
         result.ShouldBe(expected);
     }
 
@@ -80,7 +80,7 @@ public class RouteConstraintTests
     {
         var constraint = RouteConstraint.Get("datetime");
         var expected = new DateTime(2022, 1, 2, 4, 5, 6);
-        var result = (DateTime)constraint.Convert(expected.ToString("yyyy-M-d hh\\:mm\\:ss", CultureInfo.InvariantCulture));
+        var result = (DateTime)constraint.Convert(expected.ToString("yyyy-M-d hh\\:mm\\:ss", CultureInfo.InvariantCulture))!;
         result.ShouldBe(expected);
     }
 }
