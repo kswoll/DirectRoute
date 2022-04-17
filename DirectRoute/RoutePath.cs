@@ -157,7 +157,7 @@ public class RoutePath
         if (routeArguments is null)
             throw new ArgumentNullException(nameof(routeArguments));
         if (routeArguments.Length != Variables.Where(x => x.Constraint.IsPathValueRequired).Count())
-            throw new ArgumentException($"{nameof(routeArguments)} must contain the same number of elements as this path supports ({Value}), found only variables for {string.Join(", ", Variables.Select(x => x.Variable))}");
+            throw new ArgumentException($"{nameof(routeArguments.Length)} must contain the same number of elements as this path supports ({Value}), received {routeArguments} arguments but {Variables.Count()} variables: {string.Join(", ", Variables.Select(x => x.Variable))}");
 
         var result = new StringBuilder();
         var routeArgumentQueue = new Queue<object>(routeArguments);

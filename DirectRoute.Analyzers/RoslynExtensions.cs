@@ -40,7 +40,7 @@ namespace DirectRoute.Analyzers
 
         public static string Capitalize(this string s)
         {
-            return string.Concat(s[0].ToString().ToUpper(), s.Substring(1));
+            return string.IsNullOrEmpty(s) ? s : string.Concat(s[0].ToString().ToUpper(), s.Substring(1));
         }
 
         public static bool IsSubclassOf(this ITypeSymbol type, ITypeSymbol baseType)

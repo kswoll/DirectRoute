@@ -4,6 +4,13 @@ namespace DirectRoute.Endpoints.Server;
 
 public class ApiEndpointRequestHandler
 {
+    private readonly DirectRouteConfiguration configuration;
+
+    public ApiEndpointRequestHandler(DirectRouteConfiguration configuration)
+    {
+        this.configuration = configuration;
+    }
+
     public RequestDelegate HandleRequest(Type endpointType, Action<ApiEndpoint>? initializer = null)
     {
         return async context =>
@@ -21,7 +28,7 @@ public class ApiEndpointRequestHandler
 
     protected virtual async Task InitializeEndpoint(ApiEndpoint endpoint, HttpContext context)
     {
-        endpoint.Middleware.Add(new HttpMiddleware(context));
+        endpoint.Middleware.Add(new HttpMiddleware(context, configuration));
         await endpoint.InitializeAsync(new HttpApiEndpointContext(context));
     }
 }

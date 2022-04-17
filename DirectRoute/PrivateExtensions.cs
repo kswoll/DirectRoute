@@ -1,4 +1,5 @@
-﻿using System.Text;
+﻿using DirectRoute.TypeConverters;
+using System.Text;
 using System.Text.Encodings.Web;
 using System.Text.RegularExpressions;
 
@@ -40,7 +41,8 @@ internal static class PrivateExtensions
                 {
                     if (value is IConvertible)
                     {
-                        builder.Append($"{delimiter}{key}={UrlEncoder.Default.Encode((string)Convert.ChangeType(value, typeof(string)))}");
+                        var stringValue = (string?)TypeConverter.Convert(value, typeof(string));
+                        builder.Append($"{delimiter}{key}={UrlEncoder.Default.Encode(stringValue ?? "")}");
                     }
                     else
                     {

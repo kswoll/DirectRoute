@@ -177,7 +177,7 @@ $@"
 
                 // Add the source code to the compilation
                 var source = string.Concat(start, properties, end);
-                context.AddSource($"{type.Name}.api.cs", source);
+                context.AddSource($"{type.Name}.{typeParameters.Length}.api.cs", source);
 
             }
         }

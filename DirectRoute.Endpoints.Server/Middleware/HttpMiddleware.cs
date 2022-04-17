@@ -12,11 +12,14 @@ public class HttpMiddleware : ApiEndpointMiddleware
 {
     private HttpContext Context { get; }
 
+    private readonly DirectRouteConfiguration configuration;
+
     private PropertyInfo? bodyProperty;
 
-    public HttpMiddleware(HttpContext context)
+    public HttpMiddleware(HttpContext context, DirectRouteConfiguration configuration)
     {
         Context = context;
+        this.configuration = configuration;
     }
 
     protected override async Task InitializeAsync(ApiEndpoint endpoint)
@@ -146,7 +149,7 @@ public class HttpMiddleware : ApiEndpointMiddleware
     {
         // If this endpoint implements an endpoint interface, we will use attributes on that method and its parameters (for
         // example [Body])
-        var endpointInterface = endpoint.GetType().GetInterfaces().SingleOrDefault(x => x.GetInterfaces().Any(y => typeof(IEndpoint).IsAssignableFrom(y)));
+        var endpointInterface = configuration.EndpointInterfacesByImplementationType[endpoint.GetType()];
         if (endpointInterface != null)
         {
             var invokeMethod = endpointInterface.GetMethod("Invoke");

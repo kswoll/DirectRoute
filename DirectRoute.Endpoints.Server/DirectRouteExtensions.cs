@@ -58,7 +58,7 @@ public static class DirectRouteExtensions
         var endpointInterfacesAndImplementations = endpointImplementationTypes
             .Select(x => new
             {
-                InterfaceType = x.GetInterfaces().SingleOrDefault(y => y != typeof(IEndpoint) && typeof(IEndpoint).IsAssignableFrom(y)),
+                InterfaceType = x.GetInterfaces().SingleOrDefault(y => y != typeof(IEndpoint) && typeof(IEndpoint).IsAssignableFrom(y) && !y.IsAssignableFrom(x.BaseType)),
                 ImplementationType = x
             })
             .Where(x => x.InterfaceType != null)
@@ -68,6 +68,7 @@ public static class DirectRouteExtensions
         // Scan for situations where multiple implementations implement the same interface.  That's invalid, and catching
         // it early here allows for highly descriptive exception messages.
         var endpointImplementationsByInterfaceType = new Dictionary<Type, Type>();
+        var endpointInterfacesByImplementationType = new Dictionary<Type, Type>();
         foreach (var item in endpointInterfacesAndImplementations)
         {
             if (item.ImplementationType.BaseType != null && item.InterfaceType.IsAssignableFrom(item.ImplementationType.BaseType))
@@ -82,9 +83,18 @@ public static class DirectRouteExtensions
                 var alreadyRegisteredItem = endpointImplementationsByInterfaceType[interfaceType];
                 throw new InvalidOperationException($"Interface type '{interfaceType.FullName}' for implementation '{item.ImplementationType.FullName}' has already been registered for '{alreadyRegisteredItem.FullName}'");
             }
+            else
+            {
+                if (!endpointInterfacesByImplementationType.TryAdd(item.ImplementationType, interfaceType))
+                {
+                    var alreadyRegisteredItem = endpointInterfacesByImplementationType[item.ImplementationType];
+                    throw new InvalidOperationException($"Interface type '{interfaceType.FullName}' for implementation '{item.ImplementationType.FullName}' has already been registered for '{alreadyRegisteredItem.FullName}'");
+                }
+            }
         }
 
-        return new DirectRouteConfiguration(endpointInterfaceTypes, endpointImplementationTypes, endpointImplementationsByInterfaceType);
+        return new DirectRouteConfiguration(endpointInterfaceTypes, endpointImplementationTypes, endpointImplementationsByInterfaceType,
+            endpointInterfacesByImplementationType);
     }
 
     public static void MapDirectRoute(this IEndpointRouteBuilder endpoints, RoutesBase routes, GenericEndpointImplementationProvider? genericImplementationProvider = null)
