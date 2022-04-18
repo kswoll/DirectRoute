@@ -9,4 +9,10 @@
     <PackageReference Include="Microsoft.CodeAnalysis.Common" Version="4.1.0" />
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.1.0" />
   </ItemGroup>
+
+  <PropertyGroup>
+    <PackageId>DirectRoute.Analyzers</PackageId>
+    <RepositoryType>git</RepositoryType>
+    <RepositoryUrl>https://github.com/kswoll/DirectRoute</RepositoryUrl>
+  </PropertyGroup>
 </Project>

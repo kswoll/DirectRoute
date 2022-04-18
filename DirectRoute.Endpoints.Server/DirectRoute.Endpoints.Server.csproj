@@ -16,4 +16,9 @@
     <ProjectReference Include="..\DirectRoute\DirectRoute.csproj" />
   </ItemGroup>
 
+  <PropertyGroup>
+    <PackageId>DirectRoute.Endpoints.Server</PackageId>
+    <RepositoryType>git</RepositoryType>
+    <RepositoryUrl>https://github.com/kswoll/DirectRoute</RepositoryUrl>
+  </PropertyGroup>
 </Project>

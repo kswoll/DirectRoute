@@ -19,4 +19,9 @@
     <ProjectReference Include="..\DirectRoute\DirectRoute.csproj" />
   </ItemGroup>
 
+  <PropertyGroup>
+    <PackageId>DirectRoute.Blazor</PackageId>
+    <RepositoryType>git</RepositoryType>
+    <RepositoryUrl>https://github.com/kswoll/DirectRoute</RepositoryUrl>
+  </PropertyGroup>
 </Project>
