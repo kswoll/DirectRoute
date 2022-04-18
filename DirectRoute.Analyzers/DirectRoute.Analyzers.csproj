@@ -14,5 +14,6 @@
     <PackageId>DirectRoute.Analyzers</PackageId>
     <RepositoryType>git</RepositoryType>
     <RepositoryUrl>https://github.com/kswoll/DirectRoute</RepositoryUrl>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
   </PropertyGroup>
 </Project>
