@@ -42,7 +42,7 @@ public static class DirectRouteExtensions
         }
     }
 
-    private static DirectRouteConfiguration CreateConfiguration(IReadOnlyList<Assembly> interfaceAssemblies, IReadOnlyList<Assembly> implementationAssemblies)
+    public static DirectRouteConfiguration CreateConfiguration(IReadOnlyList<Assembly> interfaceAssemblies, IReadOnlyList<Assembly> implementationAssemblies)
     {
         var endpointInterfaceTypes = interfaceAssemblies
             .SelectMany(x => x.GetTypes())

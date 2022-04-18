@@ -51,7 +51,8 @@ public static class ApiEndpointTestExtensions
             context.Request.RouteValues = new RouteValueDictionary(routeValues);
         }
 
-        endpoint.Middleware.Add(new HttpMiddleware(context));
+        var configuration = DirectRouteExtensions.CreateConfiguration(new[] { endpoint.GetType().Assembly }, new[] { endpoint.GetType().Assembly });
+        endpoint.Middleware.Add(new HttpMiddleware(context, configuration));
 
         // Prepare a response stream for the test
         var responseStream = new MemoryStream();

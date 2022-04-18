@@ -13,9 +13,9 @@ public class RoutePathTests
         routePath.Parts[1].Type.ShouldBe(RoutePartType.Text);
         routePath.Parts[1].Text.ShouldBe("endpoint");
         routePath.Parts[0].Variable.ShouldBeNull();
-        routePath.Parts[0].Constraint.ShouldBeNull();
+        routePath.Parts[0].Constraint.ShouldBe(RouteConstraint.None);
         routePath.Parts[1].Variable.ShouldBeNull();
-        routePath.Parts[1].Constraint.ShouldBeNull();
+        routePath.Parts[1].Constraint.ShouldBe(RouteConstraint.None);
     }
 
     [Test]
@@ -26,7 +26,7 @@ public class RoutePathTests
         routePath.Parts[0].Type.ShouldBe(RoutePartType.Variable);
         routePath.Parts[0].Text.ShouldBeNull();
         routePath.Parts[0].Variable.ShouldBe("id");
-        routePath.Parts[0].Constraint.ShouldBeNull();
+        routePath.Parts[0].Constraint.ShouldBe(RouteConstraint.None);
     }
 
     [Test]
