@@ -23,5 +23,9 @@ jobs:
       run: dotnet pack --configuration Release /p:Version=${VERSION} --no-build --output .
     - name: Push
       run: dotnet nuget push DirectRoute.${VERSION}.nupkg -s https://api.nuget.org/v3/index.json --api-key ${NUGET_API_KEY}
+      run: dotnet nuget push DirectRoute.Analyzers.${VERSION}.nupkg -s https://api.nuget.org/v3/index.json --api-key ${NUGET_API_KEY}
+      run: dotnet nuget push DirectRoute.Blazor.${VERSION}.nupkg -s https://api.nuget.org/v3/index.json --api-key ${NUGET_API_KEY}
+      run: dotnet nuget push DirectRoute.Endpoints.${VERSION}.nupkg -s https://api.nuget.org/v3/index.json --api-key ${NUGET_API_KEY}
+      run: dotnet nuget push DirectRoute.Endpoints.Server.${VERSION}.nupkg -s https://api.nuget.org/v3/index.json --api-key ${NUGET_API_KEY}
       env:
         NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
