@@ -1,4 +1,6 @@
 ﻿using System.Collections.Concurrent;
+using System.Linq.Expressions;
+using System.Reflection;
 
 namespace DirectRoute.Endpoints.Server;
 
@@ -79,6 +81,25 @@ public static class ApiEndpointExtensions
         };
 
         return endpointImplementationType;
+    }
+
+    public static T Set<T, TValue>(this T endpoint, Expression<Func<T, TValue>> property, TValue value)
+    {
+        var propertyInfo = property.GetPropertyInfo();
+        if (propertyInfo == null)
+            throw new InvalidOperationException($"Unable to map {property} to a PropertyInfo");
+
+        propertyInfo.SetValue(endpoint, value);
+        return endpoint;
+    }
+
+    internal static PropertyInfo? GetPropertyInfo(this LambdaExpression expression)
+    {
+        var current = expression.Body;
+        if (current is UnaryExpression unary)
+            current = unary.Operand;
+        var call = current as MemberExpression;
+        return (PropertyInfo?)call?.Member;
     }
 
     internal static ApiEndpointRequestHandler GetRequestHandler<T>(this IEndpointRouteBuilder endpoints)
