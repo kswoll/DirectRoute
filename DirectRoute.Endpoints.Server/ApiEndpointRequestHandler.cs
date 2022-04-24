@@ -5,10 +5,12 @@ namespace DirectRoute.Endpoints.Server;
 public class ApiEndpointRequestHandler
 {
     private readonly DirectRouteConfiguration configuration;
+    private readonly EndpointInitializersBase endpointInitializers;
 
-    public ApiEndpointRequestHandler(DirectRouteConfiguration configuration)
+    public ApiEndpointRequestHandler(DirectRouteConfiguration configuration, EndpointInitializersBase endpointInitializers)
     {
         this.configuration = configuration;
+        this.endpointInitializers = endpointInitializers;
     }
 
     public RequestDelegate HandleRequest(Type endpointType, Action<ApiEndpoint>? initializer = null)
@@ -20,6 +22,7 @@ public class ApiEndpointRequestHandler
                 throw new InvalidOperationException($"No endpoint found for type {endpointType.FullName}");
 
             initializer?.Invoke(endpoint);
+            endpointInitializers.GetInitializer(endpointType)?.Invoke(endpoint);
 
             await InitializeEndpoint(endpoint, context);
             await endpoint.ExecuteAsync();

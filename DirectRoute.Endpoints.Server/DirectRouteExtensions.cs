@@ -11,6 +11,7 @@ public static class DirectRouteExtensions
 
     public static void AddDirectRoute(this IServiceCollection services, Type routesType, IReadOnlyList<Assembly> interfaceAssemblies, IReadOnlyList<Assembly> implementationAssemblies)
     {
+        services.AddSingleton<EndpointInitializersBase>();
         services.AddSingleton<ApiEndpointRequestHandler>();
         services.AddSingleton(typeof(RoutesBase), routesType);
 
@@ -106,7 +107,7 @@ public static class DirectRouteExtensions
             var endpointImplementation = endpoints.MapRoute(route, genericImplementationProvider);
 
             var propertyNames = endpointImplementation.GetProperties().Select(x => x.Name).ToHashSet();
-            var variableNames = route.Variables.Select(x => x.Variable!).ToArray();
+            var variableNames = route.Variables.Select(x => x.Variable!.Capitalize()).ToArray();
             var missingPropertyNames = variableNames.Where(x => !propertyNames.Contains(x)).ToArray();
             if (missingPropertyNames.Any())
                 throw new InvalidOperationException($"Route {route.Path} expected the following missing properties on {endpointImplementation.Name}: {string.Join(", ", missingPropertyNames)}");

@@ -149,7 +149,7 @@ public class HttpMiddleware : ApiEndpointMiddleware
     {
         // If this endpoint implements an endpoint interface, we will use attributes on that method and its parameters (for
         // example [Body])
-        var endpointInterface = configuration.EndpointInterfacesByImplementationType[endpoint.GetType()];
+        configuration.EndpointInterfacesByImplementationType.TryGetValue(endpoint.GetType(), out var endpointInterface);
         if (endpointInterface != null)
         {
             var invokeMethod = endpointInterface.GetMethod("Invoke");
