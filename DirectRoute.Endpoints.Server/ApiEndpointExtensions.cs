@@ -8,41 +8,6 @@ public delegate Type GenericEndpointImplementationProvider(Type endpointInterfac
 
 public static class ApiEndpointExtensions
 {
-    public static ApiEndpointModule Module(this IEndpointRouteBuilder endpoints, string prefix, Action<ApiEndpointModule> moduleHandler)
-    {
-        var module = new ApiEndpointModule(endpoints, prefix);
-        moduleHandler(module);
-        return module;
-    }
-
-    public static IEndpointConventionBuilder MapGet<T>(this IEndpointRouteBuilder endpoints, string pattern)
-        where T : ApiEndpoint
-    {
-        var result = endpoints.MapGet(pattern, endpoints.GetRequestDelegate<T>());
-        return result;
-    }
-
-    public static IEndpointConventionBuilder MapPost<T>(this IEndpointRouteBuilder endpoints, string pattern)
-        where T : ApiEndpoint
-    {
-        var result = endpoints.MapPost(pattern, endpoints.GetRequestDelegate<T>());
-        return result;
-    }
-
-    public static IEndpointConventionBuilder MapPut<T>(this IEndpointRouteBuilder endpoints, string pattern)
-        where T : ApiEndpoint
-    {
-        var result = endpoints.MapPut(pattern, endpoints.GetRequestDelegate<T>());
-        return result;
-    }
-
-    public static IEndpointConventionBuilder MapDelete<T>(this IEndpointRouteBuilder endpoints, string pattern)
-        where T : ApiEndpoint
-    {
-        var result = endpoints.MapDelete(pattern, endpoints.GetRequestDelegate<T>());
-        return result;
-    }
-
     /// <summary>
     /// Called internallly by DirectRouteExtensions.MapDirectRoute
     /// </summary>
@@ -74,10 +39,10 @@ public static class ApiEndpointExtensions
 
         _ = route.Method switch
         {
-            RouteMethod.Post => endpoints.MapPost(pattern, requestHandler.HandleRequest(endpointImplementationType)),
-            RouteMethod.Put => endpoints.MapPut(pattern, requestHandler.HandleRequest(endpointImplementationType)),
-            RouteMethod.Delete => endpoints.MapDelete(pattern, requestHandler.HandleRequest(endpointImplementationType)),
-            _ => endpoints.MapGet(pattern, requestHandler.HandleRequest(endpointImplementationType))
+            RouteMethod.Post => endpoints.MapPost(pattern, requestHandler.HandleRequest(route, endpointImplementationType)),
+            RouteMethod.Put => endpoints.MapPut(pattern, requestHandler.HandleRequest(route, endpointImplementationType)),
+            RouteMethod.Delete => endpoints.MapDelete(pattern, requestHandler.HandleRequest(route, endpointImplementationType)),
+            _ => endpoints.MapGet(pattern, requestHandler.HandleRequest(route, endpointImplementationType))
         };
 
         return endpointImplementationType;
@@ -105,10 +70,5 @@ public static class ApiEndpointExtensions
     internal static ApiEndpointRequestHandler GetRequestHandler<T>(this IEndpointRouteBuilder endpoints)
     {
         return endpoints.ServiceProvider.GetRequiredService<ApiEndpointRequestHandler>();
-    }
-
-    internal static RequestDelegate GetRequestDelegate<T>(this IEndpointRouteBuilder endpoints, Action<ApiEndpoint>? initializer = null)
-    {
-        return endpoints.GetRequestHandler<T>().HandleRequest(typeof(T), initializer);
     }
 }

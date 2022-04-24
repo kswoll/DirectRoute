@@ -11,9 +11,16 @@ public static class DirectRouteExtensions
 
     public static void AddDirectRoute(this IServiceCollection services, IReadOnlyList<Assembly> interfaceAssemblies, IReadOnlyList<Assembly> implementationAssemblies)
     {
-        services.AddSingleton<EndpointInitializersBase>();
         services.AddSingleton<ApiEndpointRequestHandler>();
         services.AddSingleton<IApiEndpointProvider, DefaultApiEndpointProvider>();
+
+        // Register EndpointsBase as the default implementation of EndpointsBase.  (kind of a NullObjectPattern since
+        // this implementation of EndpointsBase doesn't do anything useful).
+        services.AddSingleton<EndpointsBase, EndpointsBase>();
+
+        // Ensure whatever type is registered for EndpointsBase is also registered for IApiEndpointProvider.  However,
+        // if you register a different implementation before we get to registering endpoints, it'll use that instead.
+        services.AddSingleton<IApiEndpointProvider>(services => services.GetRequiredService<EndpointsBase>());
 
         var configuration = CreateConfiguration(interfaceAssemblies, implementationAssemblies);
         services.AddSingleton(configuration);
@@ -34,7 +41,7 @@ public static class DirectRouteExtensions
             }
         }
 
-        // Also handle requests for the concrete implementation. Caution: if an implementation
+        // Also handle requests for the concrete implementation. Note: if an implementation
         // doesn't expose an endpoint interface, putting this logic here will still capture it
         // (vs. putting it into the above loop)
         foreach (var implementation in configuration.EndpointImplementationTypes)

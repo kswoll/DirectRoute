@@ -2,7 +2,7 @@
 
 namespace DirectRoute.Blazor;
 
-public static class DirectRouteBuilderExtensions
+public static class DirectRouteExtensions
 {
     /// <summary>
     /// Installs DirectRoute in a Blazor app
