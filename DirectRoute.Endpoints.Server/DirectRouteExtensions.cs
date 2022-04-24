@@ -13,6 +13,7 @@ public static class DirectRouteExtensions
     {
         services.AddSingleton<EndpointInitializersBase>();
         services.AddSingleton<ApiEndpointRequestHandler>();
+        services.AddSingleton<IApiEndpointProvider, DefaultApiEndpointProvider>();
         services.AddSingleton(typeof(RoutesBase), routesType);
 
         var configuration = CreateConfiguration(interfaceAssemblies, implementationAssemblies);
@@ -98,13 +99,13 @@ public static class DirectRouteExtensions
             endpointInterfacesByImplementationType);
     }
 
-    public static void MapDirectRoute(this IEndpointRouteBuilder endpoints, RoutesBase routes, GenericEndpointImplementationProvider? genericImplementationProvider = null)
+    public static void MapDirectRoute(this IEndpointRouteBuilder endpoints, RoutesBase routes)
     {
         // Register endpoints based on routes
         foreach (var route in routes.List)
         {
             // Register the endpoint and obtain the implementation
-            var endpointImplementation = endpoints.MapRoute(route, genericImplementationProvider);
+            var endpointImplementation = endpoints.MapRoute(route);
 
             var propertyNames = endpointImplementation.GetProperties().Select(x => x.Name).ToHashSet();
             var variableNames = route.Variables.Select(x => x.Variable!.Capitalize()).ToArray();

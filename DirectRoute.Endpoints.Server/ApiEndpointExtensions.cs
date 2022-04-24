@@ -50,46 +50,35 @@ public static class ApiEndpointExtensions
     /// <returns></returns>
     /// <exception cref="ArgumentException"></exception>
     /// <exception cref="Exception"></exception>
-    internal static Type MapRoute(this IEndpointRouteBuilder endpoints, Route route,
-        GenericEndpointImplementationProvider? genericImplementationProvider = null)
+    internal static Type MapRoute(this IEndpointRouteBuilder endpoints, Route route)
     {
+        var endpointProviders = endpoints.ServiceProvider.GetServices<IApiEndpointProvider>().ToArray();
         var configuration = endpoints.ServiceProvider.GetRequiredService<DirectRouteConfiguration>();
 
         var endpointInterface = route.EndpointType;
 
-        if (!configuration.EndpointImplemenationsByInterfaceType.TryGetValue(endpointInterface, out var endpointImplementation)
-            && endpointInterface.IsGenericType)
+        Type? endpointImplementationType = null;
+        foreach (var endpointProvider in endpointProviders)
         {
-            var genericType = endpointInterface.GetGenericTypeDefinition();
-            if (configuration.EndpointImplemenationsByInterfaceType.TryGetValue(genericType, out endpointImplementation))
-            {
-                if (genericImplementationProvider == null)
-                    throw new ArgumentException($"Generic type {genericType} found, so {genericImplementationProvider} must not be null");
-                endpointImplementation = genericImplementationProvider(endpointInterface, endpointImplementation);
-            }
-            else
-            {
-                throw new Exception($"Unable to find an implementation for interface {endpointInterface.FullName}.  Generic types cannot be automatically resolved.  Make sure to pass in a genericImplementationProvider to MapDirectRoute");
-            }
+            endpointImplementationType = endpointProvider.MapRouteToImplementation(configuration, route);
+            if (endpointImplementationType != null)
+                break;
         }
-
-        if (endpointImplementation == null)
-        {
-            throw new Exception($"Unable to find an implementation for interface {endpointInterface.FullName}");
-        }
+        if (endpointImplementationType == null)
+            throw new Exception($"Unable to find an implementation for interface {endpointInterface.FullName}.");
 
         var requestHandler = endpoints.ServiceProvider.GetRequiredService<ApiEndpointRequestHandler>();
         var pattern = route.Path;
 
         _ = route.Method switch
         {
-            RouteMethod.Post => endpoints.MapPost(pattern, requestHandler.HandleRequest(endpointImplementation)),
-            RouteMethod.Put => endpoints.MapPut(pattern, requestHandler.HandleRequest(endpointImplementation)),
-            RouteMethod.Delete => endpoints.MapDelete(pattern, requestHandler.HandleRequest(endpointImplementation)),
-            _ => endpoints.MapGet(pattern, requestHandler.HandleRequest(endpointImplementation))
+            RouteMethod.Post => endpoints.MapPost(pattern, requestHandler.HandleRequest(endpointImplementationType)),
+            RouteMethod.Put => endpoints.MapPut(pattern, requestHandler.HandleRequest(endpointImplementationType)),
+            RouteMethod.Delete => endpoints.MapDelete(pattern, requestHandler.HandleRequest(endpointImplementationType)),
+            _ => endpoints.MapGet(pattern, requestHandler.HandleRequest(endpointImplementationType))
         };
 
-        return endpointImplementation;
+        return endpointImplementationType;
     }
 
     internal static ApiEndpointRequestHandler GetRequestHandler<T>(this IEndpointRouteBuilder endpoints)

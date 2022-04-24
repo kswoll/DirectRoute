@@ -2,6 +2,9 @@
 
 namespace DirectRoute.Endpoints.Server;
 
+/// <summary>
+/// Allows you to apply your own logic to help initialize an endpoint.
+/// </summary>
 public class EndpointInitializersBase
 {
     private readonly ConcurrentDictionary<Type, Action<ApiEndpoint>> initializers = new();
