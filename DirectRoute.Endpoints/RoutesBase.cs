@@ -1,51 +1,93 @@
-﻿namespace DirectRoute.Endpoints;
+﻿using System.Collections.Concurrent;
 
-public abstract class RoutesBase
+namespace DirectRoute.Endpoints;
+
+public class RoutesBase : IRoutes
 {
-    protected abstract void RegisterRoutes();
+    public string? RoutePrefix { get; }
 
-    public IReadOnlyList<Route> List => routes;
-    public string? RoutePrefix { get; set; }
-
+    private readonly RoutesBase? parent;
     private readonly List<Route> routes = new();
     private readonly Dictionary<Type, Route> routesByEndpoint = new();
+    private readonly List<RoutesBase> modules = new();
+    private readonly ConcurrentDictionary<Type, Route?> routesByEndpointCache = new();
 
-    public RoutesBase()
+    public RoutesBase(string? routePrefix)
     {
-        RegisterRoutes();
+        RoutePrefix = routePrefix;
     }
 
-    public RouteModule Module(Action<RouteModule> moduleHandler)
+    private RoutesBase(RoutesBase parent, string? routePrefix)
+    {
+        this.parent = parent;
+        RoutePrefix = routePrefix;
+    }
+
+    public IEnumerable<Route> List => routes.Concat(modules.SelectMany(x => x.List));
+
+    /// <summary>
+    /// Gets the route defined for the specified endpoint interface.
+    /// </summary>
+    public Route? Get(Type endpointType)
+    {
+        return routesByEndpointCache.GetOrAdd(endpointType, type =>
+        {
+            if (routesByEndpoint.TryGetValue(type, out var route))
+            {
+                return route;
+            }
+            else
+            {
+                foreach (var module in modules)
+                {
+                    route = module.Get(type);
+                    if (route != null)
+                        return route;
+                }
+
+                return null;
+            }
+        });
+
+    }
+
+    protected void Register(Route route)
+    {
+        routes.Add(route);
+        routesByEndpoint[route.EndpointType] = route;
+    }
+
+    private string DeriveSubPrefix(string prefix)
+    {
+        if (string.IsNullOrEmpty(RoutePrefix))
+            return prefix;
+        else if (string.IsNullOrEmpty(prefix))
+            return RoutePrefix;
+        else
+            return $"{RoutePrefix}/{prefix}";
+    }
+
+    // TODO: convert these to mixins (extension methods)
+    #region RouteList behavior
+
+    public RoutesBase Module(Action<RoutesBase> moduleHandler)
     {
         return Module("", moduleHandler);
     }
 
-    public RouteModule Module(string prefix, Action<RouteModule> moduleHandler)
+    public RoutesBase Module(string prefix, Action<RoutesBase> moduleHandler)
     {
-        var module = new RouteModule(this, prefix);
+        var module = new RoutesBase(this, DeriveSubPrefix(prefix));
         moduleHandler(module);
+        modules.Add(module);
         return module;
-    }
-
-    /// <summary>
-    /// Gets the route defined for the specified endpoint interface.,
-    /// </summary>
-    /// <param name="endpointType"></param>
-    /// <returns></returns>
-    /// <exception cref="Exception"></exception>
-    public Route Get(Type endpointType)
-    {
-        if (!routesByEndpoint.TryGetValue(endpointType, out var route))
-            throw new InvalidOperationException($"No route found for endpoint: {endpointType}, check that the endpoint is registered in your Routes class");
-        return route;
     }
 
     private Route<T> Route<T>(RouteMethod method, string path)
         where T : IEndpoint
     {
         var route = new Route<T>(this, method, path);
-        routes.Add(route);
-        routesByEndpoint[typeof(T)] = route;
+        Register(route);
         return route;
     }
 
@@ -92,4 +134,27 @@ public abstract class RoutesBase
     {
         return Route<T>(RouteMethod.Delete, path);
     }
+
+    #endregion
+
+    #region PropertyRoutes behavior
+
+    /// <summary>
+    /// Assigns the Routes property to each route property defined in in this class.  Call this from your
+    /// constructor after initializing RoutePrefix.  Also registers them.
+    /// </summary>
+    protected void InitializeRoutes()
+    {
+        foreach (var property in GetType().GetProperties().Where(x => typeof(Route).IsAssignableFrom(x.PropertyType)))
+        {
+            var route = (Route?)property.GetValue(this);
+            if (route != null)
+            {
+                route.Routes = this;
+                Register(route);
+            }
+        }
+    }
+
+    #endregion
 }

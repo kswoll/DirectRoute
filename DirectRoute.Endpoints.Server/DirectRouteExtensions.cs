@@ -4,17 +4,16 @@ namespace DirectRoute.Endpoints.Server;
 
 public static class DirectRouteExtensions
 {
-    public static void AddDirectRoute(this IServiceCollection services, Type routesType, Assembly interfaceAssembly, Assembly implementationAssembly)
+    public static void AddDirectRoute(this IServiceCollection services, Assembly interfaceAssembly, Assembly implementationAssembly)
     {
-        services.AddDirectRoute(routesType, new[] { interfaceAssembly }, new[] { implementationAssembly });
+        services.AddDirectRoute(new[] { interfaceAssembly }, new[] { implementationAssembly });
     }
 
-    public static void AddDirectRoute(this IServiceCollection services, Type routesType, IReadOnlyList<Assembly> interfaceAssemblies, IReadOnlyList<Assembly> implementationAssemblies)
+    public static void AddDirectRoute(this IServiceCollection services, IReadOnlyList<Assembly> interfaceAssemblies, IReadOnlyList<Assembly> implementationAssemblies)
     {
         services.AddSingleton<EndpointInitializersBase>();
         services.AddSingleton<ApiEndpointRequestHandler>();
         services.AddSingleton<IApiEndpointProvider, DefaultApiEndpointProvider>();
-        services.AddSingleton(typeof(RoutesBase), routesType);
 
         var configuration = CreateConfiguration(interfaceAssemblies, implementationAssemblies);
         services.AddSingleton(configuration);
@@ -99,19 +98,22 @@ public static class DirectRouteExtensions
             endpointInterfacesByImplementationType);
     }
 
-    public static void MapDirectRoute(this IEndpointRouteBuilder endpoints, RoutesBase routes)
+    public static void MapDirectRoute(this IEndpointRouteBuilder endpoints, params IRoutes[] routesArray)
     {
-        // Register endpoints based on routes
-        foreach (var route in routes.List)
+        foreach (var routes in routesArray)
         {
-            // Register the endpoint and obtain the implementation
-            var endpointImplementation = endpoints.MapRoute(route);
+            // Register endpoints based on routes
+            foreach (var route in routes.List)
+            {
+                // Register the endpoint and obtain the implementation
+                var endpointImplementation = endpoints.MapRoute(route);
 
-            var propertyNames = endpointImplementation.GetProperties().Select(x => x.Name).ToHashSet();
-            var variableNames = route.Variables.Select(x => x.Variable!.Capitalize()).ToArray();
-            var missingPropertyNames = variableNames.Where(x => !propertyNames.Contains(x)).ToArray();
-            if (missingPropertyNames.Any())
-                throw new InvalidOperationException($"Route {route.Path} expected the following missing properties on {endpointImplementation.Name}: {string.Join(", ", missingPropertyNames)}");
+                var propertyNames = endpointImplementation.GetProperties().Select(x => x.Name).ToHashSet();
+                var variableNames = route.Variables.Select(x => x.Variable!.Capitalize()).ToArray();
+                var missingPropertyNames = variableNames.Where(x => !propertyNames.Contains(x)).ToArray();
+                if (missingPropertyNames.Any())
+                    throw new InvalidOperationException($"Route {route.Path} expected the following missing properties on {endpointImplementation.Name}: {string.Join(", ", missingPropertyNames)}");
+            }
         }
     }
 }
