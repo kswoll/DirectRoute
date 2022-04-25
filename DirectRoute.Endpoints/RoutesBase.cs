@@ -6,7 +6,6 @@ public class RoutesBase : IRoutes
 {
     public string? RoutePrefix { get; }
 
-    private readonly RoutesBase? parent;
     private readonly List<Route> routes = new();
     private readonly Dictionary<Type, Route> routesByEndpoint = new();
     private readonly List<RoutesBase> modules = new();
@@ -14,12 +13,6 @@ public class RoutesBase : IRoutes
 
     public RoutesBase(string? routePrefix)
     {
-        RoutePrefix = routePrefix;
-    }
-
-    private RoutesBase(RoutesBase parent, string? routePrefix)
-    {
-        this.parent = parent;
         RoutePrefix = routePrefix;
     }
 
@@ -77,7 +70,7 @@ public class RoutesBase : IRoutes
 
     public RoutesBase Module(string prefix, Action<RoutesBase> moduleHandler)
     {
-        var module = new RoutesBase(this, DeriveSubPrefix(prefix));
+        var module = new RoutesBase(DeriveSubPrefix(prefix));
         moduleHandler(module);
         modules.Add(module);
         return module;

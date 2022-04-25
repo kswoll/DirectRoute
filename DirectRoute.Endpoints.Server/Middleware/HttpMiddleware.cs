@@ -36,7 +36,7 @@ public class HttpMiddleware : ApiEndpointMiddleware
 
     protected override void HandleUnauthorized(ApiEndpoint endpoint)
     {
-        Context.Response.StatusCode = (int)HttpStatusCode.Unauthorized;
+        Context.Response.StatusCode = (int)HttpStatusCode.Forbidden;
     }
 
     protected override async Task HandleBadRequestAsync(ApiEndpoint endpoint, IReadOnlyList<ValidationFailure> failures)
@@ -90,11 +90,22 @@ public class HttpMiddleware : ApiEndpointMiddleware
             if (value == null && (property.GetCustomAttribute<FromBodyAttribute>() != null || property.GetCustomAttribute<BodyAttribute>() != null || property.Name == bodyProperty?.Name))
             {
                 var contentType = Context.Request.ContentType;
-                if (contentType == null || !contentType.StartsWith("application/json"))
-                    throw new InvalidOperationException("When using [FromBody] or [Body] the content type of the request must be application/json");
 
-                var body = await Context.Request.ReadFromJsonAsync(property.PropertyType);
-                property.SetValue(endpoint, body);
+                if (contentType != null && contentType.StartsWith("application/octet-stream"))
+                {
+                    if (property.PropertyType == typeof(Stream))
+                        property.SetValue(endpoint, Context.Request.Body);
+                    else
+                        throw new InvalidOperationException($"Unsupported property ({property.Name}) type ({property.PropertyType.FullName}) on {property.DeclaringType!.FullName} for content type application/octet-stream");
+                }
+                else
+                {
+                    if (contentType == null || !contentType.StartsWith("application/json"))
+                        throw new InvalidOperationException("When using [FromBody] or [Body] the content type of the request must be application/json");
+
+                    var body = await Context.Request.ReadFromJsonAsync(property.PropertyType);
+                    property.SetValue(endpoint, body);
+                }
             }
 
             // If it's a nested query string property of the form key.subkey=subkeyvalue
