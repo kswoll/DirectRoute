@@ -47,12 +47,24 @@ public abstract class ApiEndpoint
     /// use this method to load the entity and save it in a field and then your OnExecute implementation
     /// can use the field without loading the entity again.
     /// </summary>
-    protected virtual async Task LoadDataAsync()
+    protected async Task LoadDataAsync()
     {
         foreach (var middleware in Middleware)
         {
             await middleware.LoadDataAsync(this);
         }
+
+        OnLoadData();
+        await OnLoadDataAsync();
+    }
+
+    protected virtual void OnLoadData()
+    {
+    }
+
+    protected virtual Task OnLoadDataAsync()
+    {
+        return Task.CompletedTask;
     }
 
     public async Task ExecuteAsync()
@@ -111,7 +123,7 @@ public abstract class ApiEndpoint
         }
     }
 
-    protected virtual async Task<bool> IsFoundAsync()
+    protected async Task<bool> IsFoundAsync()
     {
         foreach (var middleware in Middleware)
         {
@@ -120,14 +132,29 @@ public abstract class ApiEndpoint
                 return isAuthorized.Value;
         }
 
+        if (!OnIsFound())
+            return false;
+        if (!await OnIsFoundAsync())
+            return false;
+
         return true;
+    }
+
+    protected virtual bool OnIsFound()
+    {
+        return true;
+    }
+
+    protected virtual Task<bool> OnIsFoundAsync()
+    {
+        return Task.FromResult(true);
     }
 
     /// <summary>
     /// Return true if the API should operate as the owner of the entities involved in the request.
     /// </summary>
     /// <returns></returns>
-    protected virtual async Task<bool?> IsOwnerAsync()
+    protected async Task<bool> IsOwnerAsync()
     {
         foreach (var middleware in Middleware)
         {
@@ -136,28 +163,63 @@ public abstract class ApiEndpoint
                 return isAuthorized.Value;
         }
 
-        return null;
+        if (!OnIsOwner())
+            return false;
+        if (!await OnIsOwnerAsync())
+            return false;
+
+        return true;
     }
 
-    protected virtual async Task<bool> IsAuthorizedAsync()
+    protected virtual bool OnIsOwner()
+    {
+        return true;
+    }
+
+    protected virtual Task<bool> OnIsOwnerAsync()
+    {
+        return Task.FromResult(true);
+    }
+
+    protected async Task<bool> IsAuthorizedAsync()
     {
         var isOwner = await IsOwnerAsync();
 
         foreach (var middleware in Middleware)
         {
-            var isAuthorized = await middleware.IsAuthorized(this, isOwner == true);
+            var isAuthorized = await middleware.IsAuthorized(this, isOwner);
             if (isAuthorized != null)
                 return isAuthorized.Value;
         }
 
+        if (!OnIsAuthorized(isOwner))
+            return false;
+        if (!await OnIsAuthorizedAsync(isOwner))
+            return false;
+
         if (isOwner == true)
             return true;
 
-        return isOwner == null;  // If IsOwner returned null, it means it's opting out of enforcing authorization and it's up to the middleware (or overrides)
+        return isOwner;
+    }
+
+    protected virtual bool OnIsAuthorized(bool isOwner)
+    {
+        return true;
+    }
+
+    protected virtual Task<bool> OnIsAuthorizedAsync(bool isOwner)
+    {
+        return Task.FromResult(true);
+    }
+
+    protected virtual void Validate(List<ValidationFailure> validations)
+    {
     }
 
     protected virtual Task ValidateAsync(List<ValidationFailure> validations)
     {
+        Validate(validations);
         return Task.CompletedTask;
     }
 

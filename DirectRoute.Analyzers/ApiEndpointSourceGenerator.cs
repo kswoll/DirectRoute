@@ -122,7 +122,12 @@ namespace DirectRoute.Analyzers
                 var declaringTypes = classDeclaration.GetContainingTypeDeclarations().Reverse().ToArray();
                 var declaringTypeNames = declaringTypes.Select(x => x.Identifier.ToString()).ToArray();
 
-                var existingPropertiesByName = type.GetAllMembers().OfType<IPropertySymbol>().ToDictionary(x => x.Name);
+                var existingPropertiesByName = new Dictionary<string, IPropertySymbol>();
+                foreach (var property in type.GetAllMembers().OfType<IPropertySymbol>())
+                {
+                    if (!existingPropertiesByName.ContainsKey(property.Name))
+                        existingPropertiesByName.Add(property.Name, property);
+                }
                 foreach (var parameter in invokeMethod.Parameters)
                 {
                     if (!existingPropertiesByName.ContainsKey(parameter.Name.Capitalize()))
