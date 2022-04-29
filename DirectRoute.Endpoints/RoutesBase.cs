@@ -44,7 +44,7 @@ public class RoutesBase : IRoutes
 
     }
 
-    protected void Register(Route route)
+    protected void RegisterRoute(Route route)
     {
         routes.Add(route);
         routesByEndpoint[route.EndpointType] = route;
@@ -80,7 +80,7 @@ public class RoutesBase : IRoutes
         where T : IEndpoint
     {
         var route = new Route<T>(this, method, path);
-        Register(route);
+        RegisterRoute(route);
         return route;
     }
 
@@ -144,7 +144,7 @@ public class RoutesBase : IRoutes
             if (route != null)
             {
                 route.Routes = this;
-                Register(route);
+                RegisterRoute(route);
             }
         }
     }

@@ -151,10 +151,15 @@ public abstract class ApiEndpoint
     }
 
     /// <summary>
-    /// Return true if the API should operate as the owner of the entities involved in the request.
+    /// If this method returns true, the current user will be able to access this endpoint irrespective of any other
+    /// permissions.  The basic concept of ownership vs authorization is that if IsOwnerAsync returns true, then the
+    /// user will be able to access the endpoint irrespective of any other permissions they may have been granted.  If
+    /// it returns false then permission will not be granted unless overridden through middleware or overrides of the
+    /// authorization methods.  If it returns null, ownership is not considered when authorizing access to the endpoint.
     /// </summary>
-    /// <returns></returns>
-    protected async Task<bool> IsOwnerAsync()
+    /// <returns>Return false to prohibit access by default.  Return true to grant access no matter what.  Return null to
+    /// indicate that this endpoint has no notion of an owner and that other permission logic should control access.</returns>
+    protected async Task<bool?> IsOwnerAsync()
     {
         foreach (var middleware in Middleware)
         {
@@ -163,22 +168,34 @@ public abstract class ApiEndpoint
                 return isAuthorized.Value;
         }
 
-        if (!OnIsOwner())
-            return false;
-        if (!await OnIsOwnerAsync())
-            return false;
+        if (OnIsOwner() is var isOwner && isOwner != null)
+            return isOwner;
+        if (await OnIsOwnerAsync() is var isOwnerAsync && isOwnerAsync != null)
+            return isOwnerAsync;
 
-        return true;
+        return null;
     }
 
-    protected virtual bool OnIsOwner()
+    /// <summary>
+    /// If this method returns true, the current user will be able to access this endpoint irrespective of any other
+    /// permissions.
+    /// </summary>
+    /// <returns>Return false to prohibit access by default.  Return true to grant access no matter what.  Return null to
+    /// indicate that this endpoint has no notion of an owner and that other permission logic should control access.</returns>
+    protected virtual bool? OnIsOwner()
     {
-        return true;
+        return null;
     }
 
-    protected virtual Task<bool> OnIsOwnerAsync()
+    /// <summary>
+    /// If this method returns true, the current user will be able to access this endpoint irrespective of any other
+    /// permissions.
+    /// </summary>
+    /// <returns>Return false to prohibit access by default.  Return true to grant access no matter what.  Return null to
+    /// indicate that this endpoint has no notion of an owner and that other permission logic should control access.</returns>
+    protected virtual Task<bool?> OnIsOwnerAsync()
     {
-        return Task.FromResult(true);
+        return Task.FromResult<bool?>(null);
     }
 
     protected async Task<bool> IsAuthorizedAsync()
@@ -187,20 +204,17 @@ public abstract class ApiEndpoint
 
         foreach (var middleware in Middleware)
         {
-            var isAuthorized = await middleware.IsAuthorized(this, isOwner);
+            var isAuthorized = await middleware.IsAuthorized(this, isOwner == true);
             if (isAuthorized != null)
                 return isAuthorized.Value;
         }
 
-        if (!OnIsAuthorized(isOwner))
+        if (!OnIsAuthorized(isOwner == true))
             return false;
-        if (!await OnIsAuthorizedAsync(isOwner))
+        if (!await OnIsAuthorizedAsync(isOwner == true))
             return false;
 
-        if (isOwner == true)
-            return true;
-
-        return isOwner;
+        return isOwner != false;
     }
 
     protected virtual bool OnIsAuthorized(bool isOwner)
