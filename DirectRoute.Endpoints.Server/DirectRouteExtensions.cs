@@ -1,15 +1,16 @@
 ﻿using System.Reflection;
+using System.Text.Json;
 
 namespace DirectRoute.Endpoints.Server;
 
 public static class DirectRouteExtensions
 {
-    public static void AddDirectRoute(this IServiceCollection services, Assembly interfaceAssembly, Assembly implementationAssembly)
+    public static void AddDirectRoute(this IServiceCollection services, Assembly interfaceAssembly, Assembly implementationAssembly, JsonSerializerOptions jsonOptions)
     {
-        services.AddDirectRoute(new[] { interfaceAssembly }, new[] { implementationAssembly });
+        services.AddDirectRoute(new[] { interfaceAssembly }, new[] { implementationAssembly }, jsonOptions);
     }
 
-    public static void AddDirectRoute(this IServiceCollection services, IReadOnlyList<Assembly> interfaceAssemblies, IReadOnlyList<Assembly> implementationAssemblies)
+    public static void AddDirectRoute(this IServiceCollection services, IReadOnlyList<Assembly> interfaceAssemblies, IReadOnlyList<Assembly> implementationAssemblies, JsonSerializerOptions jsonOptions)
     {
         services.AddSingleton<ApiEndpointRequestHandler>();
         services.AddSingleton<IApiEndpointProvider, DefaultApiEndpointProvider>();
@@ -22,7 +23,7 @@ public static class DirectRouteExtensions
         // if you register a different implementation before we get to registering endpoints, it'll use that instead.
         services.AddSingleton<IApiEndpointProvider>(services => services.GetRequiredService<EndpointsBase>());
 
-        var configuration = CreateConfiguration(interfaceAssemblies, implementationAssemblies);
+        var configuration = CreateConfiguration(interfaceAssemblies, implementationAssemblies, jsonOptions);
         services.AddSingleton(configuration);
 
         foreach (var endpointType in configuration.EndpointInterfaceTypes)
@@ -50,7 +51,7 @@ public static class DirectRouteExtensions
         }
     }
 
-    public static DirectRouteConfiguration CreateConfiguration(IReadOnlyList<Assembly> interfaceAssemblies, IReadOnlyList<Assembly> implementationAssemblies)
+    public static DirectRouteConfiguration CreateConfiguration(IReadOnlyList<Assembly> interfaceAssemblies, IReadOnlyList<Assembly> implementationAssemblies, JsonSerializerOptions jsonOptions)
     {
         var endpointInterfaceTypes = interfaceAssemblies
             .SelectMany(x => x.GetTypes())
@@ -102,7 +103,7 @@ public static class DirectRouteExtensions
         }
 
         return new DirectRouteConfiguration(endpointInterfaceTypes, endpointImplementationTypes, endpointImplementationsByInterfaceType,
-            endpointInterfacesByImplementationType);
+            endpointInterfacesByImplementationType, jsonOptions);
     }
 
     public static void MapDirectRoute(this IEndpointRouteBuilder endpoints, params IRoutes[] routesArray)

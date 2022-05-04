@@ -61,9 +61,9 @@ public class HttpMiddleware : ApiEndpointMiddleware
             // collections declared as a collection of a base type will not serialize subclass properties.  This solution here only solves
             // root level arrays, but most of the time that's good enough.
             if (response is Array array)
-                await Context.Response.WriteAsJsonAsync<object>(array.Cast<object>().ToArray());
+                await Context.Response.WriteAsJsonAsync<object>(array.Cast<object>().ToArray(), configuration.JsonOptions);
             else
-                await Context.Response.WriteAsJsonAsync(response);
+                await Context.Response.WriteAsJsonAsync(response, configuration.JsonOptions);
         }
     }
 
@@ -98,10 +98,12 @@ public class HttpMiddleware : ApiEndpointMiddleware
                     else
                         throw new InvalidOperationException($"Unsupported property ({property.Name}) type ({property.PropertyType.FullName}) on {property.DeclaringType!.FullName} for content type application/octet-stream");
                 }
-                else
+                else if (contentType != null && contentType.StartsWith("application/json"))
                 {
-                    if (contentType == null || !contentType.StartsWith("application/json"))
-                        throw new InvalidOperationException("When using [FromBody] or [Body] the content type of the request must be application/json");
+                    // Commented this out for now since it's possible for there to be a [Body] attribute that is null in
+                    // which case we don't transmit any content in the request body.
+//                    if (contentType == null || !contentType.StartsWith("application/json"))
+//                        throw new InvalidOperationException("When using [FromBody] or [Body] the content type of the request must be application/json");
 
                     var body = await Context.Request.ReadFromJsonAsync(property.PropertyType);
                     property.SetValue(endpoint, body);

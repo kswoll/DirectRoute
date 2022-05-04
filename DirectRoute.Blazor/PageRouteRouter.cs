@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Components.Routing;
+using System.Net;
 using System.Reflection;
 
 namespace DirectRoute.Blazor;
@@ -27,6 +28,9 @@ public class PageRouteRouter : IComponent, IHandleAfterRender, IDisposable
 
     [Parameter]
     public Assembly[]? ReferenceAssemblies { get; set; }
+
+    [Parameter]
+    public IPageRouteHandler? PageRouteHandler { get; set; }
 
     public void Attach(RenderHandle renderHandle)
     {
@@ -90,6 +94,14 @@ public class PageRouteRouter : IComponent, IHandleAfterRender, IDisposable
         if (path.StartsWith("/"))
             path = path[1..];
 
+        int hashIndex = path.IndexOf('#');
+        string? hash = null;
+        if (hashIndex != -1)
+        {
+            hash = path[(hashIndex + 1)..];
+            path = path.Substring(0, hashIndex);
+        }
+
         int queryIndex = path.IndexOf('?');
         if (queryIndex != -1)
             path = path[..queryIndex];
@@ -104,11 +116,15 @@ public class PageRouteRouter : IComponent, IHandleAfterRender, IDisposable
             var match = route.Match(pathSegments, routeValues);
             if (!match.IsMatch)
                 throw new Exception($"Resolved a route through the route tree, but the route itself considers itself not a match.  Route {route.Path} at {page.FullName}.  (This should never happen)");
-
-            Console.WriteLine($"Navigating to {path} at {page.FullName}");
             var routeData = new RouteData(page, match.RouteArguments);
-            renderHandle.Render(Found!(routeData));
-            return;
+
+            var pageStatusCode = PageRouteHandler?.GetPageStatusCode(page, route, routeData);
+            if (pageStatusCode == null || pageStatusCode == HttpStatusCode.Found)
+            {
+                Console.WriteLine($"Navigating to {path} at {page.FullName}");
+                renderHandle.Render(Found!(routeData));
+                return;
+            }
         }
 
         // Not found
