@@ -8,5 +8,6 @@ namespace DirectRoute.Endpoints.Server;
 /// </summary>
 public interface IApiEndpointContext
 {
+    ILogger Logger { get; }
     ClaimsPrincipal CurrentUser { get; }
 }

@@ -9,11 +9,13 @@ namespace DirectRoute.Endpoints.Server;
 /// </summary>
 public class HttpApiEndpointContext : IApiEndpointContext
 {
+    public ILogger Logger { get; }
     public HttpContext Context { get; }
     public ClaimsPrincipal CurrentUser => Context.User;
 
-    public HttpApiEndpointContext(HttpContext context)
+    public HttpApiEndpointContext(ILogger logger, HttpContext context)
     {
+        Logger = logger;
         Context = context;
     }
 }

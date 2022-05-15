@@ -99,7 +99,7 @@ public class PageRouteRouter : IComponent, IHandleAfterRender, IDisposable
         if (hashIndex != -1)
         {
             hash = path[(hashIndex + 1)..];
-            path = path.Substring(0, hashIndex);
+            path = path[..hashIndex];
         }
 
         int queryIndex = path.IndexOf('?');

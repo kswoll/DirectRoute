@@ -24,14 +24,17 @@ public class ApiEndpointRequestHandler
             initializer?.Invoke(endpoint);
             endpoints.GetInitializer(route)?.Invoke(endpoint);
 
-            await InitializeEndpoint(endpoint, context);
+            var loggerType = typeof(ILogger<>).MakeGenericType(endpointType);
+            var logger = (ILogger)context.RequestServices.GetRequiredService(loggerType);
+
+            await InitializeEndpoint(logger, endpoint, context);
             await endpoint.ExecuteAsync();
         };
     }
 
-    protected virtual async Task InitializeEndpoint(ApiEndpoint endpoint, HttpContext context)
+    protected virtual async Task InitializeEndpoint(ILogger logger, ApiEndpoint endpoint, HttpContext context)
     {
         endpoint.Middleware.Add(new HttpMiddleware(context, configuration));
-        await endpoint.InitializeAsync(new HttpApiEndpointContext(context));
+        await endpoint.InitializeAsync(new HttpApiEndpointContext(logger, context));
     }
 }

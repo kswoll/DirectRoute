@@ -51,7 +51,7 @@ public static class ApiEndpointTestExtensions
             context.Request.RouteValues = new RouteValueDictionary(routeValues);
         }
 
-        var configuration = DirectRouteExtensions.CreateConfiguration(new[] { endpoint.GetType().Assembly }, new[] { endpoint.GetType().Assembly });
+        var configuration = DirectRouteExtensions.CreateConfiguration(new[] { endpoint.GetType().Assembly }, new[] { endpoint.GetType().Assembly }, new JsonSerializerOptions());
         endpoint.Middleware.Add(new HttpMiddleware(context, configuration));
 
         // Prepare a response stream for the test
@@ -59,7 +59,7 @@ public static class ApiEndpointTestExtensions
         context.Response.Body = responseStream;
 
         // Initialize the endpoint and execute it
-        await endpoint.InitializeAsync(new HttpApiEndpointContext(context));
+        await endpoint.InitializeAsync(new HttpApiEndpointContext(new TestLogger(), context));
         await endpoint.ExecuteAsync();
 
         // Reset the response stream

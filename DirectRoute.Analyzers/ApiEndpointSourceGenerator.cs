@@ -26,6 +26,8 @@ namespace DirectRoute.Analyzers
 
         public void Initialize(IncrementalGeneratorInitializationContext context)
         {
+            Debugger.Launch();
+
             IncrementalValuesProvider<ClassDeclarationSyntax> classDeclarations = context.SyntaxProvider
                 .CreateSyntaxProvider(
                     predicate: static (s, _) => IsSyntaxTargetForGeneration(s),

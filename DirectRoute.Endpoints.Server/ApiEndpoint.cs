@@ -93,6 +93,7 @@ public abstract class ApiEndpoint
             return;
         }
 
+        Context!.Logger.LogInformation("Invoking endpoint {FullName}", GetType().FullName);
         await CallOnExecuteAsync();
     }
 
