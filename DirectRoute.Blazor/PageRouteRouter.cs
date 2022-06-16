@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Components.Routing;
+using System.Collections.Concurrent;
 using System.Net;
 using System.Reflection;
 
@@ -88,7 +89,7 @@ public class PageRouteRouter : IComponent, IHandleAfterRender, IDisposable
         Refresh();
     }
 
-    private void Refresh()
+    private async void Refresh()
     {
         var path = NavigationManager.ToBaseRelativePath(location!);
         if (path.StartsWith("/"))
@@ -116,9 +117,24 @@ public class PageRouteRouter : IComponent, IHandleAfterRender, IDisposable
             var match = route.Match(pathSegments, routeValues);
             if (!match.IsMatch)
                 throw new Exception($"Resolved a route through the route tree, but the route itself considers itself not a match.  Route {route.Path} at {page.FullName}.  (This should never happen)");
+            
+            var routeArguments = match.RouteArguments.ToDictionary();
+            var expectedParameters = GetParametersByPageType(page);
+            foreach (var expectedParameter in expectedParameters)
+            {
+                if (!routeArguments.ContainsKey(expectedParameter.Name))
+                {
+                    routeArguments[expectedParameter.Name] = null;
+                }
+            }
+            
             var routeData = new RouteData(page, match.RouteArguments);
 
-            var pageStatusCode = PageRouteHandler?.GetPageStatusCode(page, route, routeData);
+
+            HttpStatusCode? pageStatusCode = null;
+            if (PageRouteHandler != null) 
+                pageStatusCode = await PageRouteHandler.GetPageStatusCode(page, route, routeData);
+            
             if (pageStatusCode == null || pageStatusCode == HttpStatusCode.Found)
             {
                 Console.WriteLine($"Navigating to {path} at {page.FullName}");
@@ -129,5 +145,12 @@ public class PageRouteRouter : IComponent, IHandleAfterRender, IDisposable
 
         // Not found
         renderHandle.Render(NotFound!);
+    }
+
+    private ConcurrentDictionary<Type, List<PropertyInfo>> parametersByPageType = new();
+
+    private List<PropertyInfo> GetParametersByPageType(Type pageType)
+    {
+        return parametersByPageType.GetOrAdd(pageType, _ => pageType.GetProperties().Where(x => x.IsDefined(typeof(ParameterAttribute)) && !x.IsDefined(typeof(SupplyParameterFromQueryAttribute))).ToList());
     }
 }

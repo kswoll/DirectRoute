@@ -175,7 +175,14 @@ public class RoutePath
                 else
                     value = part.Constraint.Value;
 
-                result.Append(Convert.ChangeType(value, typeof(string)));
+                try
+                {
+                    result.Append(Convert.ChangeType(value, typeof(string)));
+                }
+                catch (InvalidCastException ex)
+                {
+                    throw new InvalidOperationException($"Unable to convert the value '{value}' of type '{value?.GetType().FullName ?? "null"}' to type 'string' for route path '{Value}'", ex);
+                }
             }
 
             if (i < parts.Count - 1)

@@ -21,6 +21,7 @@ public abstract class ApiEndpoint
 {
     public IApiEndpointContext? Context { get; private set; }
     public List<IApiEndpointMiddleware> Middleware { get; private set; } = new List<IApiEndpointMiddleware>();
+    public ApiResponseSpan? ResponseScope { get; set; }
 
     public ClaimsPrincipal? User => Context?.CurrentUser;
 
@@ -69,6 +70,8 @@ public abstract class ApiEndpoint
 
     public async Task ExecuteAsync()
     {
+        using var _ = ResponseScope = new ApiResponseSpan(GetType().FullName);
+
         await LoadDataAsync();
 
         if (!await IsFoundAsync())
@@ -103,6 +106,7 @@ public abstract class ApiEndpoint
     /// </summary>
     public async Task Invoke()
     {
+        using var _ = ResponseScope = new ApiResponseSpan(GetType().FullName);
         await LoadDataAsync();
         await OnExecuteAsync();
     }
@@ -120,7 +124,7 @@ public abstract class ApiEndpoint
     {
         foreach (var middleware in Middleware)
         {
-            await middleware.WriteResponseAsync(null);
+            await middleware.WriteResponseAsync(this, null);
         }
     }
 
@@ -277,6 +281,7 @@ public abstract class ApiEndpoint<T> : ApiEndpoint
     /// </summary>
     public new async Task<T> Invoke()
     {
+        using var _ = ResponseScope = new ApiResponseSpan(GetType().FullName);
         await LoadDataAsync();
         return await OnExecuteAsync();
     }
@@ -285,6 +290,8 @@ public abstract class ApiEndpoint<T> : ApiEndpoint
 
     protected override async Task CallOnExecuteAsync()
     {
+        using var _ = ResponseScope = new ApiResponseSpan(GetType().FullName);
+
         T result = await OnExecuteAsync();
         await WriteResponseAsync(result);
     }
@@ -293,7 +300,7 @@ public abstract class ApiEndpoint<T> : ApiEndpoint
     {
         foreach (var middleware in Middleware)
         {
-            await middleware.WriteResponseAsync(result);
+            await middleware.WriteResponseAsync(this, result);
         }
     }
 }

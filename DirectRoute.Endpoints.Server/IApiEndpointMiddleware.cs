@@ -16,5 +16,5 @@ public interface IApiEndpointMiddleware
     Task HandleNotFoundAsync(ApiEndpoint endpoint);
     Task HandleUnauthorizedAsync(ApiEndpoint endpoint);
     Task HandleBadRequestAsync(ApiEndpoint endpoint, IReadOnlyList<ValidationFailure> failures);
-    Task WriteResponseAsync(object? response);
+    Task WriteResponseAsync(ApiEndpoint endpoint, object? response);
 }

@@ -1,4 +1,5 @@
-﻿using System.Reflection;
+﻿using DirectRoute.Endpoints.Server.Middleware;
+using System.Reflection;
 using System.Text.Json;
 
 namespace DirectRoute.Endpoints.Server;

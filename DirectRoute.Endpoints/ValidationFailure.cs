@@ -2,15 +2,19 @@
 
 public class ValidationFailure
 {
-    public string? Field { get; }
-    public string Message { get; }
+    public string? Field { get; set; }
+    public string? Message { get; set; }
+
+    public ValidationFailure()
+    {
+    }
 
     public ValidationFailure(string message)
     {
         Message = message;
     }
 
-    public ValidationFailure(string? field, string message)
+    public ValidationFailure(string field, string message)
     {
         Field = field;
         Message = message;

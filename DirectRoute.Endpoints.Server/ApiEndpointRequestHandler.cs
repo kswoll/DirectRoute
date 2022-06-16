@@ -4,8 +4,8 @@ namespace DirectRoute.Endpoints.Server;
 
 public class ApiEndpointRequestHandler
 {
-    private readonly DirectRouteConfiguration configuration;
-    private readonly EndpointsBase endpoints;
+    protected readonly DirectRouteConfiguration configuration;
+    protected readonly EndpointsBase endpoints;
 
     public ApiEndpointRequestHandler(DirectRouteConfiguration configuration, EndpointsBase endpoints)
     {
@@ -32,9 +32,14 @@ public class ApiEndpointRequestHandler
         };
     }
 
+    protected virtual HttpMiddleware CreateMiddleware(ILogger logger, ApiEndpoint endpoint, HttpContext context)
+    {
+        return new HttpMiddleware(context, configuration);
+    }
+
     protected virtual async Task InitializeEndpoint(ILogger logger, ApiEndpoint endpoint, HttpContext context)
     {
-        endpoint.Middleware.Add(new HttpMiddleware(context, configuration));
+        endpoint.Middleware.Add(CreateMiddleware(logger, endpoint, context));
         await endpoint.InitializeAsync(new HttpApiEndpointContext(logger, context));
     }
 }

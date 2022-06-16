@@ -82,11 +82,11 @@ public class ApiEndpointMiddleware : IApiEndpointMiddleware
         return Task.CompletedTask;
     }
 
-    protected virtual void WriteResponse(object? response)
+    protected virtual void WriteResponse(ApiEndpoint endpoint, object? response)
     {
     }
 
-    protected virtual Task WriteResponseAsync(object? response)
+    protected virtual Task WriteResponseAsync(ApiEndpoint endpoint, object? response)
     {
         return Task.CompletedTask;
     }
@@ -145,9 +145,9 @@ public class ApiEndpointMiddleware : IApiEndpointMiddleware
         await HandleBadRequestAsync(endpoint, failures);
     }
 
-    async Task IApiEndpointMiddleware.WriteResponseAsync(object? response)
+    async Task IApiEndpointMiddleware.WriteResponseAsync(ApiEndpoint endpoint, object? response)
     {
-        WriteResponse(response);
-        await WriteResponseAsync(response);
+        WriteResponse(endpoint, response);
+        await WriteResponseAsync(endpoint, response);
     }
 }

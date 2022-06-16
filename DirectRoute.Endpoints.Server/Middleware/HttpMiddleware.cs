@@ -10,6 +10,9 @@ namespace DirectRoute.Endpoints.Server.Middleware;
 /// </summary>
 public class HttpMiddleware : ApiEndpointMiddleware
 {
+    public bool WrapWithApiResponse { get; set; } = true;
+    public bool CanSeeSpans { get; set; }
+
     private HttpContext Context { get; }
 
     private readonly DirectRouteConfiguration configuration;
@@ -46,25 +49,29 @@ public class HttpMiddleware : ApiEndpointMiddleware
         await Context.Response.WriteAsJsonAsync(response);
     }
 
-    protected override async Task WriteResponseAsync(object? response)
+    protected override async Task WriteResponseAsync(ApiEndpoint endpoint, object? response)
     {
-        if (response == null)
-        {
-            Context.Response.StatusCode = (int)HttpStatusCode.NoContent;
-        }
-        else
-        {
-            Context.Response.StatusCode = (int)HttpStatusCode.OK;
-            Context.Response.ContentType = "application/json";
+        Context.Response.StatusCode = (int)HttpStatusCode.OK;
+        Context.Response.ContentType = "application/json";
 
-            // Support polymorphic serialization.  By default, types are serialized according to their compile time type.  Furthermore,
-            // collections declared as a collection of a base type will not serialize subclass properties.  This solution here only solves
-            // root level arrays, but most of the time that's good enough.
-            if (response is Array array)
-                await Context.Response.WriteAsJsonAsync<object>(array.Cast<object>().ToArray(), configuration.JsonOptions);
-            else
-                await Context.Response.WriteAsJsonAsync(response, configuration.JsonOptions);
+        object? result = response;
+
+        // Support polymorphic serialization.  By default, types are serialized according to their compile time type.  Furthermore,
+        // collections declared as a collection of a base type will not serialize subclass properties.  This solution here only solves
+        // root level arrays, but most of the time that's good enough.
+        if (response is Array array)
+            result = array.Cast<object>().ToArray();
+
+        if (WrapWithApiResponse)
+        {
+            result = new ApiResponse
+            {
+                Result = result,
+                Span = endpoint.ResponseScope
+            };
         }
+
+        await Context.Response.WriteAsJsonAsync(result, configuration.JsonOptions);
     }
 
     /// <summary>
