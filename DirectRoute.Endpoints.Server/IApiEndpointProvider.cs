@@ -2,6 +2,6 @@
 {
     public interface IApiEndpointProvider
     {
-        Type? MapRouteToImplementation(DirectRouteConfiguration configuration, Route route);
+        Type? MapRouteToImplementation(DirectRouteServerConfiguration configuration, Route route);
     }
 }

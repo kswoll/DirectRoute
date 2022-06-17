@@ -19,7 +19,7 @@ public class EndpointsBase : IApiEndpointProvider
         return null;
     }
 
-    public Type? MapRouteToImplementation(DirectRouteConfiguration configuration, Route route)
+    public Type? MapRouteToImplementation(DirectRouteServerConfiguration configuration, Route route)
     {
         if (registry.TryGetValue(route, out var value))
         {

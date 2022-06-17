@@ -32,7 +32,7 @@ public abstract class Route
 
     public string FormatUrl(object routeArguments, object queryString)
     {
-        var path = this.path.FormatUrl(routeArguments, queryString);
+        var path = this.path.FormatUrl(routeArguments, queryString, Routes.Configuration.QueryStringOptions);
         if (Routes.RoutePrefix == null)
             return $"/{path}";
         else

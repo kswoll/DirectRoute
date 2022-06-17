@@ -5,18 +5,20 @@ namespace DirectRoute.Endpoints;
 public class RoutesBase : IRoutes
 {
     public string? RoutePrefix { get; }
+    public IEnumerable<Route> List => routes.Concat(modules.SelectMany(x => x.List));
+    public DirectRouteConfiguration Configuration { get; private init; }
 
     private readonly List<Route> routes = new();
     private readonly Dictionary<Type, Route> routesByEndpoint = new();
     private readonly List<RoutesBase> modules = new();
     private readonly ConcurrentDictionary<Type, Route?> routesByEndpointCache = new();
 
-    public RoutesBase(string? routePrefix)
+
+    public RoutesBase(DirectRouteConfiguration configuration, string? routePrefix)
     {
+        Configuration = configuration;
         RoutePrefix = routePrefix;
     }
-
-    public IEnumerable<Route> List => routes.Concat(modules.SelectMany(x => x.List));
 
     /// <summary>
     /// Gets the route defined for the specified endpoint interface.
@@ -70,7 +72,7 @@ public class RoutesBase : IRoutes
 
     public RoutesBase Module(string prefix, Action<RoutesBase> moduleHandler)
     {
-        var module = new RoutesBase(DeriveSubPrefix(prefix));
+        var module = new RoutesBase(Configuration, DeriveSubPrefix(prefix));
         moduleHandler(module);
         modules.Add(module);
         return module;

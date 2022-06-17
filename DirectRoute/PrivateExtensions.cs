@@ -24,7 +24,7 @@ internal static class PrivateExtensions
         }
     }
 
-    public static string Query(this string s, object? queryString)
+    public static string Query(this string s, object? queryString, QueryStringOptions? queryStringOptions = null)
     {
         if (queryString == null)
             return s;
@@ -65,10 +65,19 @@ internal static class PrivateExtensions
 
             if (value?.GetType()?.IsArray ?? false)
             {
-                foreach (var element in (Array)value)
+                var array = (Array)value;
+
+                if (queryStringOptions?.UseCommaSeparatedArrays == true)
                 {
-                    if (element != null)
-                        Append(key, element);
+                    Append(key, string.Join(',', array.Cast<object>()));
+                }
+                else
+                {
+                    foreach (var element in array)
+                    {
+                        if (element != null)
+                            Append(key, element);
+                    }
                 }
             }
             else if (value != null)

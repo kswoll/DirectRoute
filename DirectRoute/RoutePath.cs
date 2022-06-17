@@ -134,9 +134,9 @@ public class RoutePath
     /// queryString.  Note that these objects can either be an instance of Dictionary{string, object} or
     /// else uses reflection to convert the properties in the object into a dictionary.
     /// </summary>
-    public string FormatUrl(object? routeArguments, object? queryString)
+    public string FormatUrl(object? routeArguments, object? queryString, QueryStringOptions? queryStringOptions = null)
     {
-        var url = FormatPath(routeArguments).Query(queryString);
+        var url = FormatPath(routeArguments).Query(queryString, queryStringOptions);
         return url;
     }
 

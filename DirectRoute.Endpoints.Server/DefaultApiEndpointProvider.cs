@@ -2,7 +2,7 @@
 
 public class DefaultApiEndpointProvider : IApiEndpointProvider
 {
-    public Type? MapRouteToImplementation(DirectRouteConfiguration configuration, Route route)
+    public Type? MapRouteToImplementation(DirectRouteServerConfiguration configuration, Route route)
     {
         var endpointInterface = route.EndpointType;
         configuration.EndpointImplemenationsByInterfaceType.TryGetValue(endpointInterface, out var endpointImplementation);

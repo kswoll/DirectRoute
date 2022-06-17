@@ -20,7 +20,7 @@ public static class ApiEndpointExtensions
     internal static Type MapRoute(this IEndpointRouteBuilder endpoints, Route route)
     {
         var endpointProviders = endpoints.ServiceProvider.GetServices<IApiEndpointProvider>().ToArray();
-        var configuration = endpoints.ServiceProvider.GetRequiredService<DirectRouteConfiguration>();
+        var configuration = endpoints.ServiceProvider.GetRequiredService<DirectRouteServerConfiguration>();
 
         var endpointInterface = route.EndpointType;
 

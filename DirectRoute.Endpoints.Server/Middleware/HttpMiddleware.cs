@@ -10,19 +10,19 @@ namespace DirectRoute.Endpoints.Server.Middleware;
 /// </summary>
 public class HttpMiddleware : ApiEndpointMiddleware
 {
-    public bool WrapWithApiResponse { get; set; } = true;
+    public bool WrapWithApiResponse { get; set; }
     public bool CanSeeSpans { get; set; }
 
     private HttpContext Context { get; }
 
-    private readonly DirectRouteConfiguration configuration;
+    private readonly DirectRouteServerConfiguration configuration;
 
     private PropertyInfo? bodyProperty;
 
-    public HttpMiddleware(HttpContext context, DirectRouteConfiguration configuration)
+    public HttpMiddleware(DirectRouteServerConfiguration configuration, HttpContext context)
     {
-        Context = context;
         this.configuration = configuration;
+        Context = context;
     }
 
     protected override async Task InitializeAsync(ApiEndpoint endpoint)
@@ -91,7 +91,18 @@ public class HttpMiddleware : ApiEndpointMiddleware
             var value = Context.Request.RouteValues[property.Name];
 
             if (value == null && query.ContainsKey(name))
+            {
                 value = query[name];
+
+                if (endpoint.Context!.Configuration.QueryStringOptions.UseCommaSeparatedArrays && property.PropertyType.IsArray && value is Array array)
+                {
+                    var commaSeparatedString = array.Cast<string>().Single();
+                    if (string.IsNullOrWhiteSpace(commaSeparatedString))
+                        value = Array.Empty<string>();
+                    else
+                        value = commaSeparatedString.Split(',');
+                }
+            }
 
             // If we still haven't found the value and the property exposes one of [FromBody] or [Body] on either the property or the api method parameter
             if (value == null && (property.GetCustomAttribute<FromBodyAttribute>() != null || property.GetCustomAttribute<BodyAttribute>() != null || property.Name == bodyProperty?.Name))
@@ -128,7 +139,6 @@ public class HttpMiddleware : ApiEndpointMiddleware
                 try
                 {
                     var typedValue = TypeConverter.Convert(value, property.PropertyType);
-
                     property.SetValue(endpoint, typedValue);
                 }
                 catch (Exception ex)
