@@ -71,4 +71,14 @@ public static class ApiEndpointExtensions
     {
         return endpoints.ServiceProvider.GetRequiredService<ApiEndpointRequestHandler>();
     }
+
+    public static async Task<T> TimeWith<T>(this Task<T> task, ApiResponseSpan span, string name)
+    {
+        T result;
+        using (span.Time(name))
+        {
+            result = await task;
+        }
+        return result;
+    }
 }

@@ -21,7 +21,7 @@ public abstract class ApiEndpoint
 {
     public IApiEndpointContext? Context { get; private set; }
     public List<IApiEndpointMiddleware> Middleware { get; private set; } = new List<IApiEndpointMiddleware>();
-    public ApiResponseSpan? ResponseScope { get; set; }
+    public ApiResponseSpan? Span { get; set; }
 
     public ClaimsPrincipal? User => Context?.CurrentUser;
 
@@ -70,54 +70,60 @@ public abstract class ApiEndpoint
 
     public async Task ExecuteAsync()
     {
-        using var _ = ResponseScope = new ApiResponseSpan(GetType().FullName);
-
-        await LoadDataAsync();
-
-        if (!await IsFoundAsync())
+        using (Span = new ApiResponseSpan(GetType().FullName))
         {
-            await HandleNotFoundAsync();
-            return;
+            await LoadDataAsync();
+
+            if (!await IsFoundAsync())
+            {
+                await HandleNotFoundAsync();
+                return;
+            }
+
+            // If the user is unauthorized, handle it (by returning HTTP status Unauthorized) and return
+            if (!await IsAuthorizedAsync())
+            {
+                await HandleUnauthorizedAsync();
+                return;
+            }
+
+            var validations = new List<ValidationFailure>();
+            await ValidateAsync(validations);
+
+            if (validations.Any())
+            {
+                await HandleBadRequestAsync(validations);
+                return;
+            }
+
+            Context!.Logger.LogInformation("Invoking endpoint {FullName}", GetType().FullName);
+            await CallOnExecuteAsync();
         }
 
-        // If the user is unauthorized, handle it (by returning HTTP status Unauthorized) and return
-        if (!await IsAuthorizedAsync())
-        {
-            await HandleUnauthorizedAsync();
-            return;
-        }
-
-        var validations = new List<ValidationFailure>();
-        await ValidateAsync(validations);
-
-        if (validations.Any())
-        {
-            await HandleBadRequestAsync(validations);
-            return;
-        }
-
-        Context!.Logger.LogInformation("Invoking endpoint {FullName}", GetType().FullName);
-        await CallOnExecuteAsync();
+        await WriteResponseAsync();
     }
 
     /// <summary>
     /// Bypasses the API negotiation such as writing the response and checking permissions and invokes the endpoint
     /// directly.
     /// </summary>
-    public async Task Invoke()
+    public virtual async Task Invoke()
     {
-        using var _ = ResponseScope = new ApiResponseSpan(GetType().FullName);
-        await LoadDataAsync();
-        await OnExecuteAsync();
+        using (Span = new ApiResponseSpan(GetType().FullName))
+        {
+            await LoadDataAsync();
+            await CallOnExecuteAsync();
+        }
+        await WriteResponseAsync();
     }
 
     /// <summary>
-    /// Should only ever call OnExecute and WriteResponse.  Exists so the generic version can handle the return value.
+    /// Should only ever call OnExecuteAsync.  Exists so the generic version can store the return value while still 
+    /// keeping OnExecuteAsync abstract.
     /// </summary>
     protected virtual async Task CallOnExecuteAsync()
     {
         await OnExecuteAsync();
-        await WriteResponseAsync();
     }
 
     protected virtual async Task WriteResponseAsync()
@@ -275,32 +281,30 @@ public abstract class ApiEndpoint
 /// <typeparam name="T">The type of the return value for your endpoint</typeparam>
 public abstract class ApiEndpoint<T> : ApiEndpoint
 {
+    public T? Result { get; set; }
+
     /// <summary>
     /// Bypasses the API negotiation such as writing the response and checking permissions and invokes the endpoint
     /// directly.  This is useful when you are using endpoints outside of the context of the web api.
     /// </summary>
-    public new async Task<T> Invoke()
+    public override async Task<T?> Invoke()
     {
-        using var _ = ResponseScope = new ApiResponseSpan(GetType().FullName);
-        await LoadDataAsync();
-        return await OnExecuteAsync();
+        Result = await OnExecuteAsync();
+        return Result;
     }
 
     protected override abstract Task<T> OnExecuteAsync();
 
     protected override async Task CallOnExecuteAsync()
     {
-        using var _ = ResponseScope = new ApiResponseSpan(GetType().FullName);
-
-        T result = await OnExecuteAsync();
-        await WriteResponseAsync(result);
+        Result = await OnExecuteAsync();
     }
 
-    protected virtual async Task WriteResponseAsync(T result)
+    protected override async Task WriteResponseAsync()
     {
         foreach (var middleware in Middleware)
         {
-            await middleware.WriteResponseAsync(this, result);
+            await middleware.WriteResponseAsync(this, Result);
         }
     }
 }

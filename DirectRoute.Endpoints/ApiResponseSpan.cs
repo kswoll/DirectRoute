@@ -1,12 +1,12 @@
 ﻿namespace DirectRoute.Endpoints;
 
-public class ApiResponseSpan : IApiResponseSpan
+public class ApiResponseSpan : IDisposable
 {
     public string Name { get; init; }
-    public DateTime Started { get; } = DateTime.UtcNow;
-    public DateTime? Ended { get; private set; }
+    public DateTime Started { get; init; } = DateTime.UtcNow;
+    public DateTime? Ended { get; set; }
     public TimeSpan Elapsed => Ended - Started ?? TimeSpan.Zero;
-    public List<IApiResponseSpan> Subspans { get; } = new();
+    public List<ApiResponseSpan> Subspans { get; init; } = new();
 
     public ApiResponseSpan()
     {
@@ -28,7 +28,7 @@ public class ApiResponseSpan : IApiResponseSpan
         End();
     }
 
-    public IApiResponseSpan Time(string name)
+    public ApiResponseSpan Time(string name)
     {
         var subspan = new ApiResponseSpan(name);
         Subspans.Add(subspan);

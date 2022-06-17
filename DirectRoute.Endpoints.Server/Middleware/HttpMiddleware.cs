@@ -67,7 +67,7 @@ public class HttpMiddleware : ApiEndpointMiddleware
             result = new ApiResponse
             {
                 Result = result,
-                Span = endpoint.ResponseScope
+                Span = endpoint.Span
             };
         }
 
